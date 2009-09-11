@@ -27,10 +27,7 @@
             return function(iino, iitem){ 
               var ilink = link.clone(1);
               ilink.empty();
-              ilink.click(function(event){
-                event.preventDefault();
-                return false;
-              });
+              ilink.click(function(event){ return false; });
               $(iitem).wrapInner(ilink);
             };
           };
