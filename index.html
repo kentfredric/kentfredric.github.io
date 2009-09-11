@@ -23,10 +23,10 @@
     <script type="text/javascript">
       jQuery(function($){ 
           $('div.crossref').each(function(item){ 
-            var link = $("div.link a:0", item).get(0);
-            $("div.link", item).remove();
+            var link = $("div.link a:0", item);
+            link.remove();
             $(item).click(function(){
-              $.get(link.href, function(data,TextStatus){
+              $.get(link.attr('href'), function(data,TextStatus){
                 $("div.content",item).remove();
                 $(item).append('<div class="content"></div>');
                 $("div.content", item).append(
