@@ -21,12 +21,10 @@
       </div>
     </div>
     <script type="text/javascript">
-      jQuery(function($){ 
-          $('div.crossref').each(function(ino, item){ 
-            var link = $("div.link a:eq(0)", item);
-            link.parent().remove();
-            $(item).css({backgroundColor: '#ffeeee'});
-            $(item).children().each(function(iino, iitem){ 
+      jQuery(function($){
+
+          var createFalseLink = function( link ) {
+            return function(iino, iitem){ 
               var ilink = link.clone(1);
               ilink.empty();
               ilink.click(function(event){
@@ -34,19 +32,36 @@
                 return false;
               });
               $(iitem).wrapInner(ilink);
-            });
-            $(item).click(function(){
-              $(item).css({backgroundColor: '#eeeeee'});
-              $.get(link.attr('href'), function(data,TextStatus){
+            };
+          };
+
+          var fetchInject = function( item ) { 
+              return function( data, TextStatus ){
                 $(item).css({backgroundColor: '#eeffee'});
                 $("div.content",item).remove();
                 $(item).append('<div class="content"></div>');
                 var d0m = $(data);
 
-                console.log(data);
                 $("div.content", item).append( $('body', d0m) );
-              });
-            });
+
+              };
+          };
+
+
+          var clickSetup = function( link, item ) { 
+            return function () { 
+              $(item).css({backgroundColor: '#eeeeee'});
+              $.get(link.attr('href'), fetchInject( item ), 'html');
+
+            };
+          };
+
+          $('div.crossref').each(function(ino, item){ 
+            var link = $("div.link a:eq(0)", item);
+            link.parent().remove();
+            $(item).css({backgroundColor: '#ffeeee'});
+            $(item).children().each(createFalseLink(link));
+            $(item).click(clickSetup( link, item ));
           });
       });
     </script>
