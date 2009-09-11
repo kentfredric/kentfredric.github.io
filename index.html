@@ -53,9 +53,9 @@
             link.parent().remove();
             $(item).css({backgroundColor: '#ffeeee'});
             $(item).children().each(createFalseLink(link));
-            $(item).toggle(clickSetup( link, item ),function(){ 
+            $(item).toggle(clickSetup( link, item ), function(){ 
               $("div.content",item).remove();
-              $(item).children.show('fast');
+              $(item).children().show('fast');
             });
           });
       });
