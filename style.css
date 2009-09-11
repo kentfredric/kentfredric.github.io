@@ -26,6 +26,10 @@ div.crossref {
   border-top: 1px solid rgba(0,0,0,0.1);
   border-bottom: 1px solid rgba(0,0,0,0.1);
 }
+div.crossref ul , 
+div.title ul {
+  text-align: left;
+}
 div.crossref div.content {
   cursor: auto;
 }
