@@ -21,6 +21,10 @@
       </div>
     </div>
     <script type="text/javascript">
+      document.debugfn = function( i ){ 
+        console.log( i );
+        window.lastdebbug = i;
+      };
       jQuery(function($){
 
           var createFalseLink = function( link ) {
@@ -40,8 +44,8 @@
                 $(item).css({backgroundColor: '#eeffee'});
                 $("div.content",item).remove();
                 $(item).append($(document.createElement('div')).addClass('content'));
+                document.debugfn(data);
                 var d0m = $(data);
-                console.log(d0m);
                 $("div.content", item).append( $('body', d0m) );
               };
           };
