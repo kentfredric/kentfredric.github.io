@@ -39,11 +39,9 @@
               return function( data, TextStatus ){
                 $(item).css({backgroundColor: '#eeffee'});
                 $("div.content",item).remove();
-                $(item).append('<div class="content"></div>');
+                $(item).append($(document.createElement('div')).addClass('content'));
                 var d0m = $(data);
-
                 $("div.content", item).append( $('body', d0m) );
-
               };
           };
 
@@ -51,8 +49,9 @@
           var clickSetup = function( link, item ) { 
             return function () { 
               $(item).css({backgroundColor: '#eeeeee'});
-              $.get(link.attr('href'), fetchInject( item ), 'html');
-
+              var linkdest = link.attr('href');
+              console.log( linkdest );
+              $.get(linkdest, fetchInject( item ), 'html');
             };
           };
 
