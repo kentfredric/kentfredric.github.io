@@ -24,15 +24,22 @@
       jQuery(function($){ 
           $('div.crossref').each(function(ino, item){ 
             var link = $("div.link a:eq(0)", item);
-            link.remove();
+            link.parent().remove();
             $(item).css({backgroundColor: '#ffeeee'});
-
+            $(item).children().each(function(iino, iitem){ 
+              var ilink = link.clone(1);
+              ilink.click(function(event){
+                event.preventDefault();
+              });
+              $(iitem).wrapInner(ilink);
+            });
             $(item).click(function(){
               $(item).css({backgroundColor: '#eeeeee'});
               $.get(link.attr('href'), function(data,TextStatus){
                 $(item).css({backgroundColor: '#eeffee'});
                 $("div.content",item).remove();
                 $(item).append('<div class="content"></div>');
+                console.log(data);
                 $("div.content", item).append(
                   $("body", data)
                 );
