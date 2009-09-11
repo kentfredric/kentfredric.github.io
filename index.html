@@ -37,21 +37,17 @@
 
           var clickSetup = function( link, item ) { 
             return function () { 
-              $(item).css({backgroundColor: '#eeeeee'});
               var linkdest = link.attr('href');
               $("div.content",item).remove();
               $(item).children().hide('fast');
               $(item).append($(document.createElement('div')).addClass('content'));
-              $("div.content", item).load( linkdest, function(){
-                  $(item).css({backgroundColor: '#eeffee'});
-              });
+              $("div.content", item).load( linkdest );
             };
           };
 
           $('div.crossref').each(function(ino, item){ 
             var link = $("div.link a:eq(0)", item);
             link.parent().remove();
-            $(item).css({backgroundColor: '#ffeeee'});
             $(item).children('.name').each(createFalseLink(link));
             $(item).toggle(clickSetup( link, item ), function(){ 
               $("div.content",item).remove();

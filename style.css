@@ -21,7 +21,12 @@ div.title div.name {
 div.title div.abstract { 
   font-size: 0.7em;
 }
-
+div.crossref {
+  cursor: pointer;
+}
+div.crossref div.content {
+  cursor: auto;
+}
 div.crossref div.name { 
   font-size: 1em;
 }
