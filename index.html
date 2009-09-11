@@ -39,24 +39,16 @@
             };
           };
 
-          var fetchInject = function( item ) { 
-              return function( data, TextStatus ){
-                $(item).css({backgroundColor: '#eeffee'});
-                $("div.content",item).remove();
-                $(item).append($(document.createElement('div')).addClass('content'));
-                document.debugfn(data);
-                var d0m = $(data);
-                $("div.content", item).append( $('body', d0m) );
-              };
-          };
-
-
           var clickSetup = function( link, item ) { 
             return function () { 
               $(item).css({backgroundColor: '#eeeeee'});
               var linkdest = link.attr('href');
               console.log( linkdest );
-              $.get(linkdest, fetchInject( item ), 'xml');
+              $("div.content",item).remove();
+              $(item).append($(document.createElement('div')).addClass('content'));
+              $("div.content", item).load( linkdest, function(){
+                  $(item).css({backgroundColor: '#eeffee'});
+              });
             };
           };
 
