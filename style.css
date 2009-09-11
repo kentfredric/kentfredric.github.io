@@ -1,0 +1,21 @@
+* {
+  font-family:"Baskerville","Didot","Cochin","Georgia",serif;
+}
+
+html {
+  background-color: #999;
+}
+
+body {
+  margin-left: auto;
+  margin-right: auto; 
+  margin-top: 5px;
+  width: 600px;
+  background-color: #FFF;
+  border: 1px solid #000;
+  padding: 50px;
+}
+h1 {
+  text-align: center;
+}
+
