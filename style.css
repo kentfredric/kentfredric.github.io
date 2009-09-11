@@ -9,14 +9,37 @@ html {
 div.title {
   text-align: center;
 }
+tt, code, kbd, samp {
+  font-family: "Bitstream Vera Sans Mono", monospace;
+  font-size: 80%;
+}
 
 div.title div.name {
   font-size: 2em;
 }
 
 div.title div.abstract { 
-  font-size: 0.5em;
+  font-size: 0.7em;
 }
+
+div.crossref div.name { 
+  font-size: 1em;
+}
+div.crossref div.abstract { 
+  font-size: 0.9em;
+}
+
+.term {
+  color:#003355;
+  background-color:rgba(0,0,255,0.04);
+  padding-left:2px;
+  padding-right:2px;
+}
+
+.noun {
+  color: #990022;
+}
+
 
 body {
   font-family:"Baskerville","Didot","Cochin","Georgia",serif;
