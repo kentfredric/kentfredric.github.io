@@ -57,7 +57,9 @@
             link.parent().remove();
             $(item).css({backgroundColor: '#ffeeee'});
             $(item).children().each(createFalseLink(link));
-            $(item).click(clickSetup( link, item ));
+            $(item).toggle(clickSetup( link, item ),function(){ 
+                $("div.content",item).remove();
+            });
           });
       });
     </script>
