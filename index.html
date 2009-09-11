@@ -21,10 +21,6 @@
       </div>
     </div>
     <script type="text/javascript">
-      document.debugfn = function( i ){ 
-        console.log( i );
-        window.lastdebbug = i;
-      };
       jQuery(function($){
 
           var createFalseLink = function( link ) {
@@ -43,8 +39,8 @@
             return function () { 
               $(item).css({backgroundColor: '#eeeeee'});
               var linkdest = link.attr('href');
-              console.log( linkdest );
               $("div.content",item).remove();
+              $(item).children().hide('fast');
               $(item).append($(document.createElement('div')).addClass('content'));
               $("div.content", item).load( linkdest, function(){
                   $(item).css({backgroundColor: '#eeffee'});
@@ -58,7 +54,8 @@
             $(item).css({backgroundColor: '#ffeeee'});
             $(item).children().each(createFalseLink(link));
             $(item).toggle(clickSetup( link, item ),function(){ 
-                $("div.content",item).remove();
+              $("div.content",item).remove();
+              $(item).children.show('fast');
             });
           });
       });
