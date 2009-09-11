@@ -31,6 +31,7 @@
               ilink.empty();
               ilink.click(function(event){
                 event.preventDefault();
+                return false;
               });
               $(iitem).wrapInner(ilink);
             });
@@ -40,10 +41,10 @@
                 $(item).css({backgroundColor: '#eeffee'});
                 $("div.content",item).remove();
                 $(item).append('<div class="content"></div>');
+                var d0m = $(data);
+
                 console.log(data);
-                $("div.content", item).append(
-                  $("body", data)
-                );
+                $("div.content", item).append( $('body', d0m) );
               });
             });
           });
