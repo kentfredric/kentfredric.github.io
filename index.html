@@ -39,6 +39,9 @@
               $(item).children().slideUp('fast');
               $(item).append($(document.createElement('div')).addClass('content'));
               $("div.content", item).load( linkdest );
+              $("div.content", item).click(function(event){
+                  event.stopPropagation();
+              });
             };
           };
 
