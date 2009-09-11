@@ -23,6 +23,8 @@ div.title div.abstract {
 }
 div.crossref {
   cursor: pointer;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  border-bottom: 1px solid rgba(0,0,0,0.1);
 }
 div.crossref div.content {
   cursor: auto;
