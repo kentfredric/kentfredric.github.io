@@ -22,11 +22,15 @@
     </div>
     <script type="text/javascript">
       jQuery(function($){ 
-          $('div.crossref').each(function(item){ 
+          $('div.crossref').each(function(ino, item){ 
             var link = $("div.link a:eq(0)", item);
             link.remove();
+            $(item).css({backgroundColor: '#ffeeee'});
+
             $(item).click(function(){
+              $(item).css({backgroundColor: '#eeeeee'});
               $.get(link.attr('href'), function(data,TextStatus){
+                $(item).css({backgroundColor: '#eeffee'});
                 $("div.content",item).remove();
                 $(item).append('<div class="content"></div>');
                 $("div.content", item).append(
