@@ -23,7 +23,7 @@
     <script type="text/javascript">
       jQuery(function($){ 
           $('div.crossref').each(function(item){ 
-            var link = $("div.link a:0", item);
+            var link = $("div.link a:eq(0)", item);
             link.remove();
             $(item).click(function(){
               $.get(link.attr('href'), function(data,TextStatus){
