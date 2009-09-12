@@ -5,7 +5,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>Kent Fredric's Projects on GitHub</title>
     <link rel="stylesheet" type="text/css" href="style.css" />
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js" defer="defer"></script>
+    <script type="text/javascript" src="http://joose-js.googlecode.com/files/joose.mini.js" defer="defer"></script>
   </head>
   <body>
     <h1>Work In Progress</h1>
@@ -20,42 +21,6 @@
         </div>
       </div>
     </div>
-    <script type="text/javascript">
-      jQuery(function($){
-
-          var createFalseLink = function( link ) {
-            return function(iino, iitem){ 
-              var ilink = link.clone(1);
-              ilink.empty();
-              ilink.click(function(event){ return false; });
-              $(iitem).wrapInner(ilink);
-            };
-          };
-
-          var clickSetup = function( link, item ) { 
-            return function () { 
-              var linkdest = link.attr('href');
-              $("div.content",item).remove();
-              $(item).children().slideUp('fast');
-              $(item).append($(document.createElement('div')).addClass('content'));
-              $("div.content", item).load( linkdest , function(){
-                $("div.content", item).children().click(function(event){
-                  event.stopPropagation();
-                  });
-              });
-            };
-          };
-
-          $('div.crossref').each(function(ino, item){ 
-            var link = $("div.link a:eq(0)", item);
-            link.parent().remove();
-            $(item).children('.name').each(createFalseLink(link));
-            $(item).toggle(clickSetup( link, item ), function(){ 
-              $("div.content",item).remove();
-              $(item).children().slideDown('fast');
-            });
-          });
-      });
-    </script>
+    <script type="text/javascript" src="/js/hotsection.js" defer="defer"></script>
   </body>
 </html>
