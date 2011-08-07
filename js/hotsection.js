@@ -1,51 +1,103 @@
 jQuery(function($){
 
+Module('nz.geek.fox',function(m){
 
-var createHotSection = function( node ){
-  var hotsection = {};
-  hotsection.link = $(node).find("div.link a:eq(0)").attr('href');
-  hotsection.fullmode = function (){ 
-    $(node).children().not('div.content').slideUp("fast");
-  };
-  hotsection.barmode = function() { 
-    $(node).children().not('div.content').slideDown("fast");
-  };
-  hotsection.recreateContent = function() {
-    $(node).find("div.content").remove();
-    var content = $(document.createElement('div')).addClass('content');
-    $(node).append( content );
-    return content;
-  };
-  hotsection.updateContent = function() {
-    var content = hotsection.recreateContent();
-    content.load( hotsection.link, function(){ 
-      content.children().click(function(event){ 
-        event.stopPropagation();
-      });;
+  Joose.Managed.Attribute.meta.extend({
+        does : [ JooseX.Attribute.Lazy ],
+  });
+
+Class("ContentBox", {
+  has: {
+    parentNode: { isa: 'Str', is: 'ro', required: 1 },
+    container : { isa: 'Obj', is: 'rw', predicate: 'hasContainer', lazy: '_buildContainer', },
+    content   : { isa: 'Obj', is: 'rw', predicate: 'hasContent', lazy: '_buildContent', },
+    populate  : { is: 'rw', required: 1 },
+  },
+  methods: {
+    _buildContainer: function(){
+      var object = document.createElement('div');
+      $(object).addClass('content');
+      $( this.getParentNode() ).append($(object));
+      return $(object);
+    },
+    _buildContent: function() {
+      var populate = this.getPopulate();
+      $( this.getContainer() ).append(
+        populate( this.getContainer() )
+      );
+    },
+    hide: function(){
+      $( this.getContainer() ).slideUp('fast');
+    },
+    show: function(){
+      this.getContent();
+      $( this.getContainer() ).slideDown('fast');
+    },
+    emptyContainer: function(){
+      this.getContainer().empty();
+      return this.getContainer();
+    },
+    loadContent: function( link , callback ){
+      this.getContainer().load( link, function(){
+        callback(this);    
+      });
+    },
+  }
+});
+
+Class("HotSection", {
+
+    has: {
+      link: { isa: 'Str', is: 'ro', required: 1},
+      node: { isa: 'Obj', is: 'ro', required: 1},
+      content: { isa: 'Obj', is: 'rw' , lazy: '_buildContent' },
+    },
+    after: {
+      initialize: function (props) {
+        var hs = this;
+        $(this.node).find("div.link").remove();
+        $(this.node).children('.name').each(function(i,o){ 
+          var a  = $(document.createElement('a')).attr('href',hs.link);
+          a.click(function(event){ return false; });
+          $(o).wrapInner(a);
+        });
+
+       $(this.node).toggle(function(){
+          hs.fullmode();
+        },function(){ 
+          hs.barmode();
+        });
+      }
+    },
+    methods:{
+      _buildContent: function(){
+        var hs = this;
+        return new nz.geek.fox.ContentBox({
+          parentNode: this.getNode(),
+          populate: function( obj ){ 
+            obj.load( hs.getLink() );
+            return "<span>Loading</span>";
+          },
+        });
+      },
+      fullmode: function(){ 
+        this.getContent().show();
+        $( this.node ).children().not('div.content').slideUp('fast');
+      },
+      barmode: function(){ 
+        $( this.node ).children().not('div.content').slideDown("fast");
+        this.getContent().hide();
+      },
+    }
+});
+
+});
+
+$('div.crossref').each(function(i,o){
+    o.HotSection = new nz.geek.fox.HotSection({ 
+      link: $(o).find("div.link a:eq(0)").attr('href'),
+      node: o,
     });
-  };
-  hotsection.setup = function(){ 
-    $(node).find("div.link a:eq(0)").remove();
-    $(node).children('.name').each(function(i,o){ 
-      var a  = $(document.createElement('a')).attr('href',hotsection.link);
-      a.click(function(event){ return false; });
-      $(o).wrapInner(a);
-    });
-    $(node).toggle(function(){ 
-      hotsection.fullmode();
-      hotsection.updateContent();
-    },function(){ 
-      hotsection.barmode();
-      $(node).children('div.content').slideUp('fast');
-    });
-  };
-  return hotsection;
-
-};
-
-
-$('div.crossref').each(function(i,o){ 
-    createHotSection(o).setup();
 });
 
 });
