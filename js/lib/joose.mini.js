@@ -1,551 +1,89 @@
-Joose={}
-Joose.top=this
-Joose.stub=function(){return function(){throw new Error("Modules can not be instantiated")}}
-Joose.VERSION=({VERSION:3.018}).VERSION
-Joose.AUTHORITY='jsan:NPLATONOV'
-Joose.A={each:function(array,func,scope){scope=scope||this
-for(var i=0,len=array.length;i<len;i++)
-if(func.call(scope,array[i],i)===false)return false},eachR:function(array,func,scope){scope=scope||this
-for(var i=array.length-1;i>=0;i--)
-if(func.call(scope,array[i],i)===false)return false},exists:function(array,value){for(var i=0,len=array.length;i<len;i++)if(array[i]==value)return true
-return false},map:function(array,func,scope){scope=scope||this
-var res=[]
-for(var i=0,len=array.length;i<len;i++)
-res.push(func.call(scope,array[i],i))
-return res},grep:function(array,func){var a=[]
-Joose.A.each(array,function(t){if(func(t))a.push(t)})
-return a},remove:function(array,removeEle){var a=[]
-Joose.A.each(array,function(t){if(t!==removeEle)a.push(t)})
-return a}}
-Joose.S={saneSplit:function(str,delimeter){var res=(str||'').split(delimeter)
-if(res.length==1&&!res[0])res.shift()
-return res},uppercaseFirst:function(string){return string.substr(0,1).toUpperCase()+string.substr(1,string.length-1)},strToClass:function(name,top){var current=top||Joose.top
-Joose.A.each(name.split('.'),function(segment){if(current)
-current=current[segment]
-else
-return false})
-return current}}
-Joose.O={each:function(object,func,scope){scope=scope||this
-for(var i in object)
-if(func.call(scope,object[i],i)===false)return false
-if(Joose.is_IE)
-return Joose.A.each(['toString','constructor','hasOwnProperty'],function(el){if(object.hasOwnProperty(el))return func.call(scope,object[el],el)})},eachOwn:function(object,func,scope){scope=scope||this
-return Joose.O.each(object,function(value,name){if(object.hasOwnProperty(name))return func.call(scope,value,name)},scope)},copy:function(source,target){target=target||{}
-Joose.O.each(source,function(value,name){target[name]=value})
-return target},copyOwn:function(source,target){target=target||{}
-Joose.O.eachOwn(source,function(value,name){target[name]=value})
-return target},getMutableCopy:function(object){var f=function(){}
-f.prototype=object
-return new f()},extend:function(target,source){return Joose.O.copy(source,target)},isEmpty:function(object){for(var i in object)if(object.hasOwnProperty(i))return false
-return true},isInstance:function(obj){return obj&&obj.meta&&obj.constructor==obj.meta.c},wantArray:function(obj){if(obj instanceof Array)return obj
-return[obj]},isFunction:function(obj){return typeof obj=='function'&&obj.constructor!=/ /.constructor}}
-Joose.I={Array:function(){return[]},Object:function(){return{}},Function:function(){return arguments.callee},Now:function(){return new Date()}}
-Joose.C=typeof JOOSE_CFG!='undefined'?JOOSE_CFG:{}
-Joose.is_IE='\v'=='v'
-Joose.is_NodeJS=Boolean(typeof process!='undefined'&&process.pid);Joose.Proto=Joose.stub()
-Joose.Proto.Empty=Joose.stub()
-Joose.Proto.Empty.meta={};;(function(){Joose.Proto.Object=Joose.stub()
-var SUPER=function(){var self=SUPER.caller
-if(self==SUPERARG)self=self.caller
-if(!self.SUPER)throw"Invalid call to SUPER"
-return self.SUPER[self.methodName].apply(this,arguments)}
-var SUPERARG=function(){return this.SUPER.apply(this,arguments[0])}
-Joose.Proto.Object.prototype={SUPERARG:SUPERARG,SUPER:SUPER,INNER:function(){throw"Invalid call to INNER"},BUILD:function(config){return arguments.length==1&&typeof config=='object'&&config||{}},initialize:function(){},toString:function(){return"a "+this.meta.name}}
-Joose.Proto.Object.meta={constructor:Joose.Proto.Object,methods:Joose.O.copy(Joose.Proto.Object.prototype),attributes:{}}
-Joose.Proto.Object.prototype.meta=Joose.Proto.Object.meta})();;(function(){Joose.Proto.Class=function(){return this.initialize(this.BUILD.apply(this,arguments))||this}
-var bootstrap={VERSION:null,AUTHORITY:null,constructor:Joose.Proto.Class,superClass:null,name:null,attributes:null,methods:null,meta:null,c:null,defaultSuperClass:Joose.Proto.Object,BUILD:function(name,extend){this.name=name
-return{__extend__:extend||{}}},initialize:function(props){var extend=props.__extend__
-this.VERSION=extend.VERSION
-this.AUTHORITY=extend.AUTHORITY
-delete extend.VERSION
-delete extend.AUTHORITY
-this.c=this.extractConstructor(extend)
-this.adaptConstructor(this.c)
-if(extend.constructorOnly){delete extend.constructorOnly
-return}
-this.construct(extend)},construct:function(extend){if(!this.prepareProps(extend))return
-var superClass=this.superClass=this.extractSuperClass(extend)
-this.processSuperClass(superClass)
-this.adaptPrototype(this.c.prototype)
-this.finalize(extend)},finalize:function(extend){this.processStem(extend)
-this.extend(extend)},prepareProps:function(extend){return true},extractConstructor:function(extend){var res=extend.hasOwnProperty('constructor')?extend.constructor:this.defaultConstructor()
-delete extend.constructor
-return res},extractSuperClass:function(extend){if(extend.hasOwnProperty('isa')&&!extend.isa)throw new Error("Attempt to inherit from undefined superclass ["+this.name+"]")
-var res=extend.isa||this.defaultSuperClass
-delete extend.isa
-return res},processStem:function(){var superMeta=this.superClass.meta
-this.methods=Joose.O.getMutableCopy(superMeta.methods||{})
-this.attributes=Joose.O.getMutableCopy(superMeta.attributes||{})},initInstance:function(instance,props){Joose.O.copyOwn(props,instance)},defaultConstructor:function(){return function(arg){var BUILD=this.BUILD
-var args=BUILD&&BUILD.apply(this,arguments)||arg||{}
-var thisMeta=this.meta
-thisMeta.initInstance(this,args)
-return thisMeta.hasMethod('initialize')&&this.initialize(args)||this}},processSuperClass:function(superClass){var superProto=superClass.prototype
-if(!superClass.meta){var extend=Joose.O.copy(superProto)
-extend.isa=Joose.Proto.Empty
-delete extend.constructor
-var meta=new this.defaultSuperClass.meta.constructor(null,extend)
-superClass.meta=superProto.meta=meta
-meta.c=superClass}
-this.c.prototype=Joose.O.getMutableCopy(superProto)
-this.c.superClass=superProto},adaptConstructor:function(c){c.meta=this
-if(!c.hasOwnProperty('toString'))c.toString=function(){return this.meta.name}},adaptPrototype:function(proto){proto.constructor=this.c
-proto.meta=this},addMethod:function(name,func){func.SUPER=this.superClass.prototype
-func.methodName=name
-this.methods[name]=func
-this.c.prototype[name]=func},addAttribute:function(name,init){this.attributes[name]=init
-this.c.prototype[name]=init},removeMethod:function(name){delete this.methods[name]
-delete this.c.prototype[name]},removeAttribute:function(name){delete this.attributes[name]
-delete this.c.prototype[name]},hasMethod:function(name){return Boolean(this.methods[name])},hasAttribute:function(name){return this.attributes[name]!==undefined},hasOwnMethod:function(name){return this.hasMethod(name)&&this.methods.hasOwnProperty(name)},hasOwnAttribute:function(name){return this.hasAttribute(name)&&this.attributes.hasOwnProperty(name)},extend:function(props){Joose.O.eachOwn(props,function(value,name){if(name!='meta'&&name!='constructor')
-if(Joose.O.isFunction(value)&&!value.meta)
-this.addMethod(name,value)
-else
-this.addAttribute(name,value)},this)},subClassOf:function(classObject,extend){return this.subClass(extend,null,classObject)},subClass:function(extend,name,classObject){extend=extend||{}
-extend.isa=classObject||this.c
-return new this.constructor(name,extend).c},instantiate:function(){var f=function(){}
-f.prototype=this.c.prototype
-var obj=new f()
-return this.c.apply(obj,arguments)||obj}}
-Joose.Proto.Class.prototype=Joose.O.getMutableCopy(Joose.Proto.Object.prototype)
-Joose.O.extend(Joose.Proto.Class.prototype,bootstrap)
-Joose.Proto.Class.prototype.meta=new Joose.Proto.Class('Joose.Proto.Class',bootstrap)
-Joose.Proto.Class.meta.addMethod('isa',function(someClass){var f=function(){}
-f.prototype=this.c.prototype
-return new f()instanceof someClass})})();Joose.Managed=Joose.stub()
-Joose.Managed.Property=new Joose.Proto.Class('Joose.Managed.Property',{name:null,init:null,value:null,definedIn:null,initialize:function(props){Joose.Managed.Property.superClass.initialize.call(this,props)
-this.computeValue()},computeValue:function(){this.value=this.init},preApply:function(targetClass){},postUnApply:function(targetClass){},apply:function(target){target[this.name]=this.value},isAppliedTo:function(target){return target[this.name]==this.value},unapply:function(from){if(!this.isAppliedTo(from))throw"Unapply of property ["+this.name+"] from ["+from+"] failed"
-delete from[this.name]},cloneProps:function(){return{name:this.name,init:this.init,definedIn:this.definedIn}},clone:function(name){var props=this.cloneProps()
-props.name=name||props.name
-return new this.constructor(props)}}).c;Joose.Managed.Property.ConflictMarker=new Joose.Proto.Class('Joose.Managed.Property.ConflictMarker',{isa:Joose.Managed.Property,apply:function(target){throw new Error("Attempt to apply ConflictMarker ["+this.name+"] to ["+target+"]")}}).c;Joose.Managed.Property.Requirement=new Joose.Proto.Class('Joose.Managed.Property.Requirement',{isa:Joose.Managed.Property,apply:function(target){if(!target.meta.hasMethod(this.name))
-throw new Error("Requirement ["+this.name+"], defined in ["+this.definedIn.definedIn.name+"] is not satisfied for class ["+target+"]")},unapply:function(from){}}).c;Joose.Managed.Property.Attribute=new Joose.Proto.Class('Joose.Managed.Property.Attribute',{isa:Joose.Managed.Property,slot:null,initialize:function(){Joose.Managed.Property.Attribute.superClass.initialize.apply(this,arguments)
-this.slot=this.name},apply:function(target){target.prototype[this.slot]=this.value},isAppliedTo:function(target){return target.prototype[this.slot]==this.value},unapply:function(from){if(!this.isAppliedTo(from))throw"Unapply of property ["+this.name+"] from ["+from+"] failed"
-delete from.prototype[this.slot]},clearValue:function(instance){delete instance[this.slot]},hasValue:function(instance){return instance.hasOwnProperty(this.slot)},getRawValueFrom:function(instance){return instance[this.slot]},setRawValueTo:function(instance,value){instance[this.slot]=value
-return this}}).c;Joose.Managed.Property.MethodModifier=new Joose.Proto.Class('Joose.Managed.Property.MethodModifier',{isa:Joose.Managed.Property,prepareWrapper:function(){throw"Abstract method [prepareWrapper] of "+this+" was called"},apply:function(target){var name=this.name
-var targetProto=target.prototype
-var isOwn=targetProto.hasOwnProperty(name)
-var original=targetProto[name]
-var superProto=target.meta.superClass.prototype
-var originalCall=isOwn?original:function(){return superProto[name].apply(this,arguments)}
-var methodWrapper=this.prepareWrapper({name:name,modifier:this.value,isOwn:isOwn,originalCall:originalCall,superProto:superProto,target:target})
-if(isOwn)methodWrapper.__ORIGINAL__=original
-methodWrapper.__CONTAIN__=this.value
-methodWrapper.__METHOD__=this
-targetProto[name]=methodWrapper},isAppliedTo:function(target){var targetCont=target.prototype[this.name]
-return targetCont&&targetCont.__CONTAIN__==this.value},unapply:function(from){var name=this.name
-var fromProto=from.prototype
-var original=fromProto[name].__ORIGINAL__
-if(!this.isAppliedTo(from))throw"Unapply of method ["+name+"] from class ["+from+"] failed"
-if(original)
-fromProto[name]=original
-else
-delete fromProto[name]}}).c;Joose.Managed.Property.MethodModifier.Override=new Joose.Proto.Class('Joose.Managed.Property.MethodModifier.Override',{isa:Joose.Managed.Property.MethodModifier,prepareWrapper:function(params){var modifier=params.modifier
-var originalCall=params.originalCall
-var superProto=params.superProto
-var superMetaConst=superProto.meta.constructor
-var isCallToProto=(superMetaConst==Joose.Proto.Class||superMetaConst==Joose.Proto.Object)&&!(params.isOwn&&originalCall.IS_OVERRIDE)
-var original=originalCall
-if(isCallToProto)original=function(){var beforeSUPER=this.SUPER
-this.SUPER=superProto.SUPER
-var res=originalCall.apply(this,arguments)
-this.SUPER=beforeSUPER
-return res}
-var override=function(){var beforeSUPER=this.SUPER
-this.SUPER=original
-var res=modifier.apply(this,arguments)
-this.SUPER=beforeSUPER
-return res}
-override.IS_OVERRIDE=true
-return override}}).c;Joose.Managed.Property.MethodModifier.Put=new Joose.Proto.Class('Joose.Managed.Property.MethodModifier.Put',{isa:Joose.Managed.Property.MethodModifier.Override,prepareWrapper:function(params){if(params.isOwn)throw"Method ["+params.name+"] is applying over something ["+params.originalCall+"] in class ["+params.target+"]"
-return Joose.Managed.Property.MethodModifier.Put.superClass.prepareWrapper.call(this,params)}}).c;Joose.Managed.Property.MethodModifier.After=new Joose.Proto.Class('Joose.Managed.Property.MethodModifier.After',{isa:Joose.Managed.Property.MethodModifier,prepareWrapper:function(params){var modifier=params.modifier
-var originalCall=params.originalCall
-return function(){var res=originalCall.apply(this,arguments)
-modifier.apply(this,arguments)
-return res}}}).c;Joose.Managed.Property.MethodModifier.Before=new Joose.Proto.Class('Joose.Managed.Property.MethodModifier.Before',{isa:Joose.Managed.Property.MethodModifier,prepareWrapper:function(params){var modifier=params.modifier
-var originalCall=params.originalCall
-return function(){modifier.apply(this,arguments)
-return originalCall.apply(this,arguments)}}}).c;Joose.Managed.Property.MethodModifier.Around=new Joose.Proto.Class('Joose.Managed.Property.MethodModifier.Around',{isa:Joose.Managed.Property.MethodModifier,prepareWrapper:function(params){var modifier=params.modifier
-var originalCall=params.originalCall
-var me
-var bound=function(){return originalCall.apply(me,arguments)}
-return function(){me=this
-var boundArr=[bound]
-boundArr.push.apply(boundArr,arguments)
-return modifier.apply(this,boundArr)}}}).c;Joose.Managed.Property.MethodModifier.Augment=new Joose.Proto.Class('Joose.Managed.Property.MethodModifier.Augment',{isa:Joose.Managed.Property.MethodModifier,prepareWrapper:function(params){var AUGMENT=function(){var callstack=[]
-var self=AUGMENT
-do{callstack.push(self.IS_AUGMENT?self.__CONTAIN__:self)
-self=self.IS_AUGMENT&&(self.__ORIGINAL__||self.SUPER[self.methodName])}while(self)
-var beforeINNER=this.INNER
-this.INNER=function(){var innerCall=callstack.pop()
-return innerCall?innerCall.apply(this,arguments):undefined}
-var res=this.INNER.apply(this,arguments)
-this.INNER=beforeINNER
-return res}
-AUGMENT.methodName=params.name
-AUGMENT.SUPER=params.superProto
-AUGMENT.IS_AUGMENT=true
-return AUGMENT}}).c;Joose.Managed.PropertySet=new Joose.Proto.Class('Joose.Managed.PropertySet',{isa:Joose.Managed.Property,properties:null,propertyMetaClass:Joose.Managed.Property,initialize:function(props){Joose.Managed.PropertySet.superClass.initialize.call(this,props)
-this.properties=props.properties||{}},addProperty:function(name,props){var metaClass=props.meta||this.propertyMetaClass
-delete props.meta
-props.definedIn=this
-props.name=name
-return this.properties[name]=new metaClass(props)},addPropertyObject:function(object){return this.properties[object.name]=object},removeProperty:function(name){var prop=this.properties[name]
-delete this.properties[name]
-return prop},haveProperty:function(name){return this.properties[name]!=null},haveOwnProperty:function(name){return this.haveProperty(name)&&this.properties.hasOwnProperty(name)},getProperty:function(name){return this.properties[name]},each:function(func,scope){Joose.O.each(this.properties,func,scope||this)},eachOwn:function(func,scope){Joose.O.eachOwn(this.properties,func,scope||this)},eachAll:function(func,scope){this.each(func,scope)},cloneProps:function(){var props=Joose.Managed.PropertySet.superClass.cloneProps.call(this)
-props.propertyMetaClass=this.propertyMetaClass
-return props},clone:function(name){var clone=this.cleanClone(name)
-clone.properties=Joose.O.copyOwn(this.properties)
-return clone},cleanClone:function(name){var props=this.cloneProps()
-props.name=name||props.name
-return new this.constructor(props)},alias:function(what){var props=this.properties
-Joose.O.each(what,function(aliasName,originalName){var original=props[originalName]
-if(original)this.addPropertyObject(original.clone(aliasName))},this)},exclude:function(what){var props=this.properties
-Joose.A.each(what,function(name){delete props[name]})},beforeConsumedBy:function(){},flattenTo:function(target){var targetProps=target.properties
-this.eachOwn(function(property,name){var targetProperty=targetProps[name]
-if(targetProperty instanceof Joose.Managed.Property.ConflictMarker)return
-if(targetProperty==null){target.addPropertyObject(property)
-return}
-if(targetProperty==property)return
-target.removeProperty(name)
-target.addProperty(name,{meta:Joose.Managed.Property.ConflictMarker})},this)},composeTo:function(target){this.eachOwn(function(property,name){if(!target.haveOwnProperty(name))target.addPropertyObject(property)})},composeFrom:function(){if(!arguments.length)return
-var flattening=this.cleanClone()
-Joose.A.each(arguments,function(arg){var isDescriptor=!(arg instanceof Joose.Managed.PropertySet)
-var propSet=isDescriptor?arg.propertySet:arg
-propSet.beforeConsumedBy(this,flattening)
-if(isDescriptor){if(arg.alias||arg.exclude)propSet=propSet.clone()
-if(arg.alias)propSet.alias(arg.alias)
-if(arg.exclude)propSet.exclude(arg.exclude)}
-propSet.flattenTo(flattening)},this)
-flattening.composeTo(this)},preApply:function(target){this.eachOwn(function(property){property.preApply(target)})},apply:function(target){this.eachOwn(function(property){property.apply(target)})},unapply:function(from){this.eachOwn(function(property){property.unapply(from)})},postUnApply:function(target){this.eachOwn(function(property){property.postUnApply(target)})}}).c;;(function(){var __ID__=1
-Joose.Managed.PropertySet.Mutable=new Joose.Proto.Class('Joose.Managed.PropertySet.Mutable',{isa:Joose.Managed.PropertySet,ID:null,derivatives:null,opened:null,composedFrom:null,initialize:function(props){Joose.Managed.PropertySet.Mutable.superClass.initialize.call(this,props)
-this.opened=1
-this.derivatives={}
-this.ID=__ID__++
-this.composedFrom=[]},addComposeInfo:function(){this.ensureOpen()
-Joose.A.each(arguments,function(arg){this.composedFrom.push(arg)
-var propSet=arg instanceof Joose.Managed.PropertySet?arg:arg.propertySet
-propSet.derivatives[this.ID]=this},this)},removeComposeInfo:function(){this.ensureOpen()
-Joose.A.each(arguments,function(arg){var i=0
-while(i<this.composedFrom.length){var propSet=this.composedFrom[i]
-propSet=propSet instanceof Joose.Managed.PropertySet?propSet:propSet.propertySet
-if(arg==propSet){delete propSet.derivatives[this.ID]
-this.composedFrom.splice(i,1)}else i++}},this)},ensureOpen:function(){if(!this.opened)throw"Mutation of closed property set: ["+this.name+"]"},addProperty:function(name,props){this.ensureOpen()
-return Joose.Managed.PropertySet.Mutable.superClass.addProperty.call(this,name,props)},addPropertyObject:function(object){this.ensureOpen()
-return Joose.Managed.PropertySet.Mutable.superClass.addPropertyObject.call(this,object)},removeProperty:function(name){this.ensureOpen()
-return Joose.Managed.PropertySet.Mutable.superClass.removeProperty.call(this,name)},composeFrom:function(){this.ensureOpen()
-return Joose.Managed.PropertySet.Mutable.superClass.composeFrom.apply(this,this.composedFrom)},open:function(){this.opened++
-if(this.opened==1){Joose.O.each(this.derivatives,function(propSet){propSet.open()})
-this.deCompose()}},close:function(){if(!this.opened)throw"Unmatched 'close' operation on property set: ["+this.name+"]"
-if(this.opened==1){this.reCompose()
-Joose.O.each(this.derivatives,function(propSet){propSet.close()})}
-this.opened--},reCompose:function(){this.composeFrom()},deCompose:function(){this.eachOwn(function(property,name){if(property.definedIn!=this)this.removeProperty(name)},this)}}).c})();Joose.Managed.StemElement=function(){throw"Modules may not be instantiated."}
-Joose.Managed.StemElement.Attributes=new Joose.Proto.Class('Joose.Managed.StemElement.Attributes',{isa:Joose.Managed.PropertySet.Mutable,propertyMetaClass:Joose.Managed.Property.Attribute}).c;Joose.Managed.StemElement.Methods=new Joose.Proto.Class('Joose.Managed.StemElement.Methods',{isa:Joose.Managed.PropertySet.Mutable,propertyMetaClass:Joose.Managed.Property.MethodModifier.Put,preApply:function(){},postUnApply:function(){}}).c;Joose.Managed.StemElement.Requirements=new Joose.Proto.Class('Joose.Managed.StemElement.Requirements',{isa:Joose.Managed.PropertySet.Mutable,propertyMetaClass:Joose.Managed.Property.Requirement,alias:function(){},exclude:function(){},flattenTo:function(target){this.each(function(property,name){if(!target.haveProperty(name))target.addPropertyObject(property)})},composeTo:function(target){this.flattenTo(target)},preApply:function(){},postUnApply:function(){}}).c;Joose.Managed.StemElement.MethodModifiers=new Joose.Proto.Class('Joose.Managed.StemElement.MethodModifiers',{isa:Joose.Managed.PropertySet.Mutable,propertyMetaClass:null,addProperty:function(name,props){var metaClass=props.meta
-delete props.meta
-props.definedIn=this
-props.name=name
-var modifier=new metaClass(props)
-var properties=this.properties
-if(!properties[name])properties[name]=[]
-properties[name].push(modifier)
-return modifier},addPropertyObject:function(object){var name=object.name
-var properties=this.properties
-if(!properties[name])properties[name]=[]
-properties[name].push(object)
-return object},removeProperty:function(name){if(!this.haveProperty(name))return undefined
-var properties=this.properties
-var modifier=properties[name].pop()
-if(!properties[name].length)Joose.Managed.StemElement.MethodModifiers.superClass.removeProperty.call(this,name)
-return modifier},alias:function(){},exclude:function(){},flattenTo:function(target){var targetProps=target.properties
-this.each(function(modifiersArr,name){var targetModifiersArr=targetProps[name]
-if(targetModifiersArr==null)targetModifiersArr=targetProps[name]=[]
-Joose.A.each(modifiersArr,function(modifier){if(!Joose.A.exists(targetModifiersArr,modifier))targetModifiersArr.push(modifier)})})},composeTo:function(target){this.flattenTo(target)},deCompose:function(){this.each(function(modifiersArr,name){var i=0
-while(i<modifiersArr.length)
-if(modifiersArr[i].definedIn!=this)
-modifiersArr.splice(i,1)
-else
-i++})},preApply:function(target){},postUnApply:function(target){},apply:function(target){this.each(function(modifiersArr,name){Joose.A.each(modifiersArr,function(modifier){modifier.apply(target)})})},unapply:function(from){this.each(function(modifiersArr,name){for(var i=modifiersArr.length-1;i>=0;i--)modifiersArr[i].unapply(from)})}}).c;Joose.Managed.PropertySet.Composition=new Joose.Proto.Class('Joose.Managed.PropertySet.Composition',{isa:Joose.Managed.PropertySet.Mutable,propertyMetaClass:Joose.Managed.PropertySet.Mutable,processOrder:null,each:function(func,scope){var props=this.properties
-var scope=scope||this
-Joose.A.each(this.processOrder,function(name){func.call(scope,props[name],name)})},eachR:function(func,scope){var props=this.properties
-var scope=scope||this
-Joose.A.eachR(this.processOrder,function(name){func.call(scope,props[name],name)})},clone:function(name){var clone=this.cleanClone(name)
-this.each(function(property){clone.addPropertyObject(property.clone())})
-return clone},alias:function(what){this.each(function(property){property.alias(what)})},exclude:function(what){this.each(function(property){property.exclude(what)})},flattenTo:function(target){var targetProps=target.properties
-this.each(function(property,name){var subTarget=targetProps[name]||target.addProperty(name,{meta:property.constructor})
-property.flattenTo(subTarget)})},composeTo:function(target){var targetProps=target.properties
-this.each(function(property,name){var subTarget=targetProps[name]||target.addProperty(name,{meta:property.constructor})
-property.composeTo(subTarget)})},deCompose:function(){this.eachR(function(property){property.open()})
-Joose.Managed.PropertySet.Composition.superClass.deCompose.call(this)},reCompose:function(){Joose.Managed.PropertySet.Composition.superClass.reCompose.call(this)
-this.each(function(property){property.close()})},unapply:function(from){this.eachR(function(property){property.unapply(from)})}}).c;Joose.Managed.Stem=new Joose.Proto.Class('Joose.Managed.Stem',{isa:Joose.Managed.PropertySet.Composition,targetMeta:null,attributesMC:Joose.Managed.StemElement.Attributes,methodsMC:Joose.Managed.StemElement.Methods,requirementsMC:Joose.Managed.StemElement.Requirements,methodsModifiersMC:Joose.Managed.StemElement.MethodModifiers,processOrder:['attributes','methods','requirements','methodsModifiers'],initialize:function(props){Joose.Managed.Stem.superClass.initialize.call(this,props)
-var targetMeta=this.targetMeta
-this.addProperty('attributes',{meta:this.attributesMC,properties:targetMeta?targetMeta.attributes:{}})
-this.addProperty('methods',{meta:this.methodsMC,properties:targetMeta?targetMeta.methods:{}})
-this.addProperty('requirements',{meta:this.requirementsMC})
-this.addProperty('methodsModifiers',{meta:this.methodsModifiersMC})},reCompose:function(){var c=this.targetMeta.c
-this.preApply(c)
-Joose.Managed.Stem.superClass.reCompose.call(this)
-this.apply(c)},deCompose:function(){var c=this.targetMeta.c
-this.unapply(c)
-Joose.Managed.Stem.superClass.deCompose.call(this)
-this.postUnApply(c)}}).c;Joose.Managed.Builder=new Joose.Proto.Class('Joose.Managed.Builder',{targetMeta:null,_buildStart:function(targetMeta,props){targetMeta.stem.open()
-Joose.A.each(['trait','traits','removeTrait','removeTraits','does','doesnot','doesnt'],function(builder){if(props[builder]){this[builder](targetMeta,props[builder])
-delete props[builder]}},this)},_extend:function(props){if(Joose.O.isEmpty(props))return
-var targetMeta=this.targetMeta
-this._buildStart(targetMeta,props)
-Joose.O.eachOwn(props,function(value,name){var handler=this[name]
-if(!handler)throw new Error("Unknown builder ["+name+"] was used during extending of ["+targetMeta.c+"]")
-handler.call(this,targetMeta,value)},this)
-this._buildComplete(targetMeta,props)},_buildComplete:function(targetMeta,props){targetMeta.stem.close()},methods:function(targetMeta,info){Joose.O.eachOwn(info,function(value,name){targetMeta.addMethod(name,value)})},removeMethods:function(targetMeta,info){Joose.A.each(info,function(name){targetMeta.removeMethod(name)})},have:function(targetMeta,info){Joose.O.eachOwn(info,function(value,name){targetMeta.addAttribute(name,value)})},havenot:function(targetMeta,info){Joose.A.each(info,function(name){targetMeta.removeAttribute(name)})},havent:function(targetMeta,info){this.havenot(targetMeta,info)},after:function(targetMeta,info){Joose.O.each(info,function(value,name){targetMeta.addMethodModifier(name,value,Joose.Managed.Property.MethodModifier.After)})},before:function(targetMeta,info){Joose.O.each(info,function(value,name){targetMeta.addMethodModifier(name,value,Joose.Managed.Property.MethodModifier.Before)})},override:function(targetMeta,info){Joose.O.each(info,function(value,name){targetMeta.addMethodModifier(name,value,Joose.Managed.Property.MethodModifier.Override)})},around:function(targetMeta,info){Joose.O.each(info,function(value,name){targetMeta.addMethodModifier(name,value,Joose.Managed.Property.MethodModifier.Around)})},augment:function(targetMeta,info){Joose.O.each(info,function(value,name){targetMeta.addMethodModifier(name,value,Joose.Managed.Property.MethodModifier.Augment)})},removeModifier:function(targetMeta,info){Joose.A.each(info,function(name){targetMeta.removeMethodModifier(name)})},does:function(targetMeta,info){Joose.A.each(Joose.O.wantArray(info),function(desc){targetMeta.addRole(desc)})},doesnot:function(targetMeta,info){Joose.A.each(Joose.O.wantArray(info),function(desc){targetMeta.removeRole(desc)})},doesnt:function(targetMeta,info){this.doesnot(targetMeta,info)},trait:function(){this.traits.apply(this,arguments)},traits:function(targetMeta,info){if(targetMeta.firstPass)return
-if(!targetMeta.meta.isDetached)throw"Can't apply trait to not detached class"
-targetMeta.meta.extend({does:info})},removeTrait:function(){this.removeTraits.apply(this,arguments)},removeTraits:function(targetMeta,info){if(!targetMeta.meta.isDetached)throw"Can't remove trait from not detached class"
-targetMeta.meta.extend({doesnot:info})}}).c;Joose.Managed.Class=new Joose.Proto.Class('Joose.Managed.Class',{isa:Joose.Proto.Class,stem:null,stemClass:Joose.Managed.Stem,stemClassCreated:false,builder:null,builderClass:Joose.Managed.Builder,builderClassCreated:false,isDetached:false,firstPass:true,skipTraitsAnchor:{},BUILD:function(){var sup=Joose.Managed.Class.superClass.BUILD.apply(this,arguments)
-var props=sup.__extend__
-var traits=Joose.O.wantArray(props.trait||props.traits||[])
-delete props.trait
-delete props.traits
-Joose.A.each(Joose.O.wantArray(props.does||[]),function(arg){var role=(arg.meta instanceof Joose.Managed.Class)?arg:arg.role
-if(role.meta.meta.isDetached)traits.push(role.meta.constructor)})
-if(traits.length)props.traits=traits
-return sup},initInstance:function(instance,props){Joose.O.each(this.attributes,function(attribute,name){if(attribute instanceof Joose.Managed.Attribute)
-attribute.initFromConfig(instance,props)
-else
-if(props.hasOwnProperty(name))instance[name]=props[name]})},defaultConstructor:function(){return function(skipTraitsAnchor,params){var thisMeta=this.meta
-var skipTraits=skipTraitsAnchor==thisMeta.skipTraitsAnchor
-var BUILD=this.BUILD
-var props=BUILD&&BUILD.apply(this,skipTraits?params:arguments)||(skipTraits?params[0]:skipTraitsAnchor)||{}
-var extend=props.__extend__||props
-var traits=extend.trait||extend.traits
-if(traits||extend.detached){delete extend.trait
-delete extend.traits
-delete extend.detached
-if(!skipTraits){var classWithTrait=thisMeta.subClass({does:traits||[]},thisMeta.name)
-var meta=classWithTrait.meta
-meta.isDetached=true
-return meta.instantiate(thisMeta.skipTraitsAnchor,arguments)}}
-thisMeta.initInstance(this,props)
-return thisMeta.hasMethod('initialize')&&this.initialize(props)||this}},finalize:function(extend){Joose.Managed.Class.superClass.finalize.call(this,extend)
-this.stem.close()
-this.afterMutate()},processStem:function(){Joose.Managed.Class.superClass.processStem.call(this)
-this.builder=new this.builderClass({targetMeta:this})
-this.stem=new this.stemClass({name:this.name,targetMeta:this})
-var builderClass=this.getClassInAttribute('builderClass')
-if(builderClass){this.builderClassCreated=true
-this.addAttribute('builderClass',this.subClassOf(builderClass))}
-var stemClass=this.getClassInAttribute('stemClass')
-if(stemClass){this.stemClassCreated=true
-this.addAttribute('stemClass',this.subClassOf(stemClass))}},extend:function(props){if(props.builder){this.getBuilderTarget().meta.extend(props.builder)
-delete props.builder}
-if(props.stem){this.getStemTarget().meta.extend(props.stem)
-delete props.stem}
-this.builder._extend(props)
-this.firstPass=false
-if(!this.stem.opened)this.afterMutate()},getBuilderTarget:function(){var builderClass=this.getClassInAttribute('builderClass')
-if(!builderClass)throw"Attempt to extend a builder on non-meta class"
-return builderClass},getStemTarget:function(){var stemClass=this.getClassInAttribute('stemClass')
-if(!stemClass)throw"Attempt to extend a stem on non-meta class"
-return stemClass},getClassInAttribute:function(attributeName){var attrClass=this.getAttribute(attributeName)
-if(attrClass instanceof Joose.Managed.Property.Attribute)attrClass=attrClass.value
-return attrClass},addMethodModifier:function(name,func,type){var props={}
-props.init=func
-props.meta=type
-return this.stem.properties.methodsModifiers.addProperty(name,props)},removeMethodModifier:function(name){return this.stem.properties.methodsModifiers.removeProperty(name)},addMethod:function(name,func,props){props=props||{}
-props.init=func
-return this.stem.properties.methods.addProperty(name,props)},addAttribute:function(name,init,props){props=props||{}
-props.init=init
-return this.stem.properties.attributes.addProperty(name,props)},removeMethod:function(name){return this.stem.properties.methods.removeProperty(name)},removeAttribute:function(name){return this.stem.properties.attributes.removeProperty(name)},hasMethod:function(name){return this.stem.properties.methods.haveProperty(name)},hasAttribute:function(name){return this.stem.properties.attributes.haveProperty(name)},hasMethodModifiersFor:function(name){return this.stem.properties.methodsModifiers.haveProperty(name)},hasOwnMethod:function(name){return this.stem.properties.methods.haveOwnProperty(name)},hasOwnAttribute:function(name){return this.stem.properties.attributes.haveOwnProperty(name)},getMethod:function(name){return this.stem.properties.methods.getProperty(name)},getAttribute:function(name){return this.stem.properties.attributes.getProperty(name)},eachRole:function(roles,func,scope){Joose.A.each(roles,function(arg,index){var role=(arg.meta instanceof Joose.Managed.Class)?arg:arg.role
-func.call(scope||this,arg,role,index)},this)},addRole:function(){this.eachRole(arguments,function(arg,role){this.beforeRoleAdd(role)
-var desc=arg
-if(role!=arg){desc.propertySet=role.meta.stem
-delete desc.role}else
-desc=desc.meta.stem
-this.stem.addComposeInfo(desc)},this)},beforeRoleAdd:function(role){var roleMeta=role.meta
-if(roleMeta.builderClassCreated)this.getBuilderTarget().meta.extend({does:[roleMeta.getBuilderTarget()]})
-if(roleMeta.stemClassCreated)this.getStemTarget().meta.extend({does:[roleMeta.getStemTarget()]})
-if(roleMeta.meta.isDetached&&!this.firstPass)this.builder.traits(this,roleMeta.constructor)},beforeRoleRemove:function(role){var roleMeta=role.meta
-if(roleMeta.builderClassCreated)this.getBuilderTarget().meta.extend({doesnt:[roleMeta.getBuilderTarget()]})
-if(roleMeta.stemClassCreated)this.getStemTarget().meta.extend({doesnt:[roleMeta.getStemTarget()]})
-if(roleMeta.meta.isDetached&&!this.firstPass)this.builder.removeTraits(this,roleMeta.constructor)},removeRole:function(){this.eachRole(arguments,function(arg,role){this.beforeRoleRemove(role)
-this.stem.removeComposeInfo(role.meta.stem)},this)},getRoles:function(){return Joose.A.map(this.stem.composedFrom,function(composeDesc){if(!(composeDesc instanceof Joose.Managed.PropertySet))return composeDesc.propertySet
-return composeDesc.targetMeta.c})},does:function(role){var myRoles=this.getRoles()
-for(var i=0;i<myRoles.length;i++)if(role==myRoles[i])return true
-for(var i=0;i<myRoles.length;i++)if(myRoles[i].meta.does(role))return true
-var superMeta=this.superClass.meta
-if(this.superClass!=Joose.Proto.Empty&&superMeta&&superMeta.meta&&superMeta.meta.hasMethod('does'))return superMeta.does(role)
-return false},getMethods:function(){return this.stem.properties.methods},getAttributes:function(){return this.stem.properties.attributes},afterMutate:function(){},getCurrentMethod:function(){for(var wrapper=arguments.callee.caller,count=0;wrapper&&count<5;wrapper=wrapper.caller,count++)
-if(wrapper.__METHOD__)return wrapper.__METHOD__
-return null}}).c;Joose.Managed.Role=new Joose.Managed.Class('Joose.Managed.Role',{isa:Joose.Managed.Class,have:{defaultSuperClass:Joose.Proto.Empty,builderRole:null,stemRole:null},methods:{defaultConstructor:function(){return function(){throw new Error("Roles cant be instantiated")}},processSuperClass:function(){if(this.superClass!=this.defaultSuperClass)throw new Error("Roles can't inherit from anything")},getBuilderTarget:function(){if(!this.builderRole){this.builderRole=new this.constructor().c
-this.builderClassCreated=true}
-return this.builderRole},getStemTarget:function(){if(!this.stemRole){this.stemRole=new this.constructor().c
-this.stemClassCreated=true}
-return this.stemRole},addRequirement:function(methodName){this.stem.properties.requirements.addProperty(methodName,{})}},stem:{methods:{apply:function(){},unapply:function(){}}},builder:{methods:{requires:function(targetClassMeta,info){Joose.A.each(Joose.O.wantArray(info),function(methodName){targetClassMeta.addRequirement(methodName)},this)}}}}).c;Joose.Managed.Attribute=new Joose.Managed.Class('Joose.Managed.Attribute',{isa:Joose.Managed.Property.Attribute,have:{is:null,builder:null,isPrivate:false,role:null,publicName:null,setterName:null,getterName:null,readable:false,writeable:false,hasGetter:false,hasSetter:false,required:false,canInlineSetRaw:true,canInlineGetRaw:true},after:{initialize:function(){var name=this.name
-this.publicName=name.replace(/^_+/,'')
-this.slot=this.isPrivate?'$$'+name:name
-this.setterName=this.setterName||this.getSetterName()
-this.getterName=this.getterName||this.getGetterName()
-this.readable=this.hasGetter=/^r/i.test(this.is)
-this.writeable=this.hasSetter=/^.w/i.test(this.is)}},override:{computeValue:function(){if(!Joose.O.isFunction(this.init))this.SUPER()},preApply:function(targetClass){targetClass.meta.extend({methods:this.getAccessorsFor(targetClass)})},postUnApply:function(from){from.meta.extend({removeMethods:this.getAccessorsFrom(from)})}},methods:{getAccessorsFor:function(targetClass){var targetMeta=targetClass.meta
-var setterName=this.setterName
-var getterName=this.getterName
-var methods={}
-if(this.hasSetter&&!targetMeta.hasMethod(setterName)){methods[setterName]=this.getSetter()
-methods[setterName].ACCESSOR_FROM=this}
-if(this.hasGetter&&!targetMeta.hasMethod(getterName)){methods[getterName]=this.getGetter()
-methods[getterName].ACCESSOR_FROM=this}
-return methods},getAccessorsFrom:function(from){var targetMeta=from.meta
-var setterName=this.setterName
-var getterName=this.getterName
-var setter=this.hasSetter&&targetMeta.getMethod(setterName)
-var getter=this.hasGetter&&targetMeta.getMethod(getterName)
-var removeMethods=[]
-if(setter&&setter.value.ACCESSOR_FROM==this)removeMethods.push(setterName)
-if(getter&&getter.value.ACCESSOR_FROM==this)removeMethods.push(getterName)
-return removeMethods},getGetterName:function(){return'get'+Joose.S.uppercaseFirst(this.publicName)},getSetterName:function(){return'set'+Joose.S.uppercaseFirst(this.publicName)},getSetter:function(){var me=this
-var slot=me.slot
-if(me.canInlineSetRaw)
-return function(value){this[slot]=value
-return this}
-else
-return function(){return me.setRawValueTo.apply(this,arguments)}},getGetter:function(){var me=this
-var slot=me.slot
-if(me.canInlineGetRaw)
-return function(value){return this[slot]}
-else
-return function(){return me.getRawValueFrom.apply(this,arguments)}},getValueFrom:function(instance){var getterName=this.getterName
-if(this.readable&&instance.meta.hasMethod(getterName))return instance[getterName]()
-return this.getRawValueFrom(instance)},setValueTo:function(instance,value){var setterName=this.setterName
-if(this.writeable&&instance.meta.hasMethod(setterName))
-instance[setterName](value)
-else
-this.setRawValueTo(instance,value)},initFromConfig:function(instance,config){var name=this.name
-var value,isSet=false
-if(config.hasOwnProperty(name)){value=config[name]
-isSet=true}else
-if(Joose.O.isFunction(this.init)){value=this.init.call(instance,config,name)
-isSet=true}else if(this.builder){value=instance[this.builder.replace(/^this\./,'')](config,name)
-isSet=true}
-if(isSet)
-this.setRawValueTo(instance,value)
-else
-if(this.required)throw new Error("Required attribute ["+name+"] is missed during initialization of "+instance)}}}).c;Joose.Managed.PropertySet.Namespace=new Joose.Proto.Class('Joose.Managed.PropertySet.Namespace',{isa:Joose.Managed.PropertySet,propertyMetaClass:null,targetMeta:null,container:null,initialize:function(props){Joose.Managed.PropertySet.Namespace.superClass.initialize.call(this,props)
-this.container=this.targetMeta.c},addProperty:function(name,value){if(value&&value.meta&&value.meta.meta.hasAttribute('ns'))value.meta.parentNs=this.targetMeta.ns
-return this.container[name]=this.properties[name]=value},removeProperty:function(name){try{delete this.container[name]}catch(e){this.container[name]=undefined}
-return Joose.Managed.PropertySet.Namespace.superClass.removeProperty.call(this,name)}}).c;Joose.Managed.Attribute.Builder=new Joose.Managed.Role('Joose.Managed.Attribute.Builder',{have:{defaultAttributeClass:Joose.Managed.Attribute},builder:{methods:{has:function(targetClassMeta,info){Joose.O.eachOwn(info,function(props,name){if(typeof props!='object'||props==null||props.constructor==/ /.constructor)props={init:props}
-props.meta=props.meta||targetClassMeta.defaultAttributeClass
-if(/^__/.test(name)){name=name.replace(/^_+/,'')
-props.isPrivate=true}
-targetClassMeta.addAttribute(name,props.init,props)},this)},hasnot:function(targetClassMeta,info){this.havenot(targetClassMeta,info)},hasnt:function(targetClassMeta,info){this.hasnot(targetClassMeta,info)}}}}).c;Joose.Managed.My=new Joose.Managed.Role('Joose.Managed.My',{have:{myClass:null,needToReAlias:false},methods:{createMy:function(extend){var thisMeta=this.meta
-var isRole=this instanceof Joose.Managed.Role
-var myExtend=extend.my||{}
-delete extend.my
-var superClassMy=this.superClass.meta.myClass
-if(!isRole&&!myExtend.isa&&superClassMy)myExtend.isa=superClassMy
-if(!myExtend.meta&&!myExtend.isa)myExtend.meta=this.constructor
-var createdClass=this.myClass=Class(myExtend)
-var c=this.c
-c.prototype.my=c.my=isRole?createdClass:new createdClass({HOST:c})
-this.needToReAlias=true},aliasStaticMethods:function(){this.needToReAlias=false
-var c=this.c
-var myProto=this.myClass.prototype
-Joose.O.eachOwn(c,function(property,name){if(property.IS_ALIAS)delete c[name]})
-this.myClass.meta.stem.properties.methods.each(function(method,name){if(!c[name])
-(c[name]=function(){return myProto[name].apply(c.my,arguments)}).IS_ALIAS=true})}},override:{extend:function(props){var myClass=this.myClass
-if(!myClass&&this.superClass.meta.myClass)this.createMy(props)
-if(props.my){if(!myClass)
-this.createMy(props)
-else{this.needToReAlias=true
-myClass.meta.extend(props.my)
-delete props.my}}
-this.SUPER(props)
-if(this.needToReAlias&&!(this instanceof Joose.Managed.Role))this.aliasStaticMethods()}},before:{addRole:function(){var myStem
-Joose.A.each(arguments,function(arg){if(!arg)throw new Error("Attempt to consume an undefined Role into ["+this.name+"]")
-var role=(arg.meta instanceof Joose.Managed.Class)?arg:arg.role
-if(role.meta.meta.hasAttribute('myClass')&&role.meta.myClass){if(!this.myClass){this.createMy({my:{does:role.meta.myClass}})
-return}
-myStem=this.myClass.meta.stem
-if(!myStem.opened)myStem.open()
-myStem.addComposeInfo(role.my.meta.stem)}},this)
-if(myStem){myStem.close()
-this.needToReAlias=true}},removeRole:function(){if(!this.myClass)return
-var myStem=this.myClass.meta.stem
-myStem.open()
-Joose.A.each(arguments,function(role){if(role.meta.meta.hasAttribute('myClass')&&role.meta.myClass){myStem.removeComposeInfo(role.my.meta.stem)
-this.needToReAlias=true}},this)
-myStem.close()}}}).c;Joose.Namespace=Joose.stub()
-Joose.Namespace.Able=new Joose.Managed.Role('Joose.Namespace.Able',{have:{parentNs:null,ns:null,bodyFunc:null},before:{extend:function(extend){if(extend.body){this.bodyFunc=extend.body
-delete extend.body}}},after:{adaptConstructor:function(extend){var localName=(this.name||'').split('.').pop()
-this.ns=new Joose.Managed.PropertySet.Namespace({name:localName,targetMeta:this})},afterMutate:function(){var bodyFunc=this.bodyFunc
-delete this.bodyFunc
-if(bodyFunc)Joose.Namespace.Manager.my.executeIn(this.c,bodyFunc)}}}).c;Joose.Managed.Bootstrap=new Joose.Managed.Role('Joose.Managed.Bootstrap',{does:[Joose.Namespace.Able,Joose.Managed.My,Joose.Managed.Attribute.Builder]}).c;Joose.Meta=Joose.stub()
-Joose.Meta.Object=new Joose.Proto.Class('Joose.Meta.Object',{isa:Joose.Proto.Object}).c;Joose.Meta.Class=new Joose.Managed.Class('Joose.Meta.Class',{isa:Joose.Managed.Class,does:Joose.Managed.Bootstrap,have:{defaultSuperClass:Joose.Meta.Object}}).c;Joose.Meta.Role=new Joose.Meta.Class('Joose.Meta.Role',{isa:Joose.Managed.Role,does:Joose.Managed.Bootstrap}).c;Joose.Namespace.Keeper=new Joose.Meta.Class('Joose.Namespace.Keeper',{isa:Joose.Meta.Class,have:{externalConstructor:null},methods:{defaultConstructor:function(){return function(){var thisMeta=arguments.callee.meta
-if(thisMeta instanceof Joose.Namespace.Keeper)throw new Error("Module ["+thisMeta.c+"] may not be instantiated. Forgot to 'use' the class with the same name?")
-var externalConstructor=thisMeta.externalConstructor
-if(typeof externalConstructor=='function'){externalConstructor.meta=thisMeta
-return externalConstructor.apply(this,arguments)}
-throw"NamespaceKeeper of ["+thisMeta.name+"] was planted incorrectly."}},plant:function(withClass){this.copyNamespaceState(withClass)
-var keeper=this.c
-keeper.meta=withClass.meta
-keeper.meta.c=keeper
-keeper.meta.externalConstructor=withClass},copyNamespaceState:function(targetClass){var targetMeta=targetClass.meta
-targetMeta.parentNs=this.parentNs
-targetMeta.ns=this.ns}}}).c;Joose.Namespace.Manager=new Joose.Managed.Class('Joose.Namespace.Manager',{have:{global:null,globalNs:null,current:null},methods:{initialize:function(){var globalKeeper=this.global=new Joose.Namespace.Keeper('').c
-var globalNs=this.globalNs=globalKeeper.meta.ns
-globalNs.container=Joose.is_NodeJS&&global||Joose.top
-globalKeeper.meta.parentNs=globalKeeper
-this.current=[globalKeeper]},getCurrent:function(){return this.current[0]},executeIn:function(ns,func){var current=this.current
-var scope=ns.meta.ns?ns.meta.ns.container:ns
-current.unshift(ns)
-var res=func.call(scope,ns)
-current.shift()
-return res},earlyCreate:function(name,metaClass,props){props.constructorOnly=true
-return new metaClass(name,props).c},create:function(nsName,metaClass,extend){if(!nsName)return new metaClass(nsName,extend).c
-var me=this
-if(/^\./.test(nsName))return this.executeIn(this.global,function(){return me.create(nsName.replace(/^\./,''),metaClass,extend)})
-props=extend||{}
-var parts=Joose.S.saneSplit(nsName,'.')
-var object=this.getCurrent()
-var soFar=Joose.S.saneSplit(object.meta.name,'.')
-for(var i=0;i<parts.length;i++){var part=parts[i]
-var isLast=i==parts.length-1
-if(part=="meta"||part=="my"||!part)throw"Module name ["+nsName+"] may not include a part called 'meta' or 'my' or empty part."
-var cur=(object==this.global?this.global.meta.ns.container:object)[part]
-soFar.push(part)
-var soFarName=soFar.join(".")
-var needFinalize=false
-var nsKeeper
-if(typeof cur=="undefined"){if(isLast){nsKeeper=this.earlyCreate(soFarName,metaClass,props)
-needFinalize=true}else
-nsKeeper=new Joose.Namespace.Keeper(soFarName).c
-if(object.meta)
-object.meta.ns.addProperty(part,nsKeeper)
-else
-object[part]=nsKeeper
-cur=nsKeeper}else if(isLast&&cur&&cur.meta){var currentMeta=cur.meta
-if(metaClass==Joose.Namespace.Keeper)
-currentMeta.extend(props)
-else{if(currentMeta instanceof Joose.Namespace.Keeper){currentMeta.plant(this.earlyCreate(soFarName,metaClass,props))
-needFinalize=true}else
-throw new Error("Double declaration of ["+soFarName+"]")}}else
-if(isLast&&!(cur&&cur.meta&&cur.meta.meta&&cur.meta.meta.hasAttribute('ns')))throw"Trying to setup module "+soFarName+" failed. There is already something: "+cur
-if(needFinalize)cur.meta.construct(props)
-object=cur}
-return object},prepareProperties:function(name,props,defaultMeta,callback){if(name&&typeof name!='string'){props=name
-name=null}
-var meta
-if(props&&props.meta){meta=props.meta
-delete props.meta}
-if(!meta)
-if(props&&typeof props.isa=='function'&&props.isa.meta)
-meta=props.isa.meta.constructor
-else
-meta=defaultMeta
-return callback.call(this,name,meta,props)},getDefaultHelperFor:function(metaClass){var me=this
-return function(name,props){return me.prepareProperties(name,props,metaClass,function(name,meta,props){return me.create(name,meta,props)})}},register:function(helperName,metaClass,func){var me=this
-if(this.meta.hasMethod(helperName)){var helper=function(){return me[helperName].apply(me,arguments)}
-if(!Joose.top[helperName])Joose.top[helperName]=helper
-if(!Joose[helperName])Joose[helperName]=helper
-if(Joose.is_NodeJS&&!global[helperName])global[helperName]=helper}else{var methods={}
-methods[helperName]=func||this.getDefaultHelperFor(metaClass)
-this.meta.extend({methods:methods})
-this.register(helperName)}},Module:function(name,props){return this.prepareProperties(name,props,Joose.Namespace.Keeper,function(name,meta,props){if(typeof props=='function')props={body:props}
-return this.create(name,meta,props)})}}}).c
-Joose.Namespace.Manager.my=new Joose.Namespace.Manager()
-Joose.Namespace.Manager.my.register('Class',Joose.Meta.Class)
-Joose.Namespace.Manager.my.register('Role',Joose.Meta.Role)
-Joose.Namespace.Manager.my.register('Module');
+Joose={top:this,stub:function(){return function(){throw Error("Modules can not be instantiated");}},VERSION:3.018,AUTHORITY:"jsan:NPLATONOV"};
+Joose.A={each:function(a,b,c){for(var c=c||this,d=0,e=a.length;d<e;d++)if(b.call(c,a[d],d)===!1)return!1},eachR:function(a,b,c){for(var c=c||this,d=a.length-1;d>=0;d--)if(b.call(c,a[d],d)===!1)return!1},exists:function(a,b){for(var c=0,d=a.length;c<d;c++)if(a[c]==b)return!0;return!1},map:function(a,b,c){for(var c=c||this,d=[],e=0,f=a.length;e<f;e++)d.push(b.call(c,a[e],e));return d},grep:function(a,b){var c=[];Joose.A.each(a,function(a){b(a)&&c.push(a)});return c},remove:function(a,b){var c=[];Joose.A.each(a,
+function(a){a!==b&&c.push(a)});return c}};Joose.S={saneSplit:function(a,b){var c=(a||"").split(b);c.length==1&&!c[0]&&c.shift();return c},uppercaseFirst:function(a){return a.substr(0,1).toUpperCase()+a.substr(1,a.length-1)},strToClass:function(a,b){var c=b||Joose.top;Joose.A.each(a.split("."),function(a){if(c)c=c[a];else return!1});return c}};
+Joose.O={each:function(a,b,c){var c=c||this,d;for(d in a)if(b.call(c,a[d],d)===!1)return!1;if(Joose.is_IE)return Joose.A.each(["toString","constructor","hasOwnProperty"],function(d){if(a.hasOwnProperty(d))return b.call(c,a[d],d)})},eachOwn:function(a,b,c){c=c||this;return Joose.O.each(a,function(d,e){if(a.hasOwnProperty(e))return b.call(c,d,e)},c)},copy:function(a,b){b=b||{};Joose.O.each(a,function(a,d){b[d]=a});return b},copyOwn:function(a,b){b=b||{};Joose.O.eachOwn(a,function(a,d){b[d]=a});return b},
+getMutableCopy:function(a){var b=function(){};b.prototype=a;return new b},extend:function(a,b){return Joose.O.copy(b,a)},isEmpty:function(a){for(var b in a)if(a.hasOwnProperty(b))return!1;return!0},isInstance:function(a){return a&&a.meta&&a.constructor==a.meta.c},wantArray:function(a){if(a instanceof Array)return a;return[a]},isFunction:function(a){return typeof a=="function"&&a.constructor!=/ /.constructor}};
+Joose.I={Array:function(){return[]},Object:function(){return{}},Function:function(){return arguments.callee},Now:function(){return new Date}};Joose.C=typeof JOOSE_CFG!="undefined"?JOOSE_CFG:{};Joose.is_IE=!1;Joose.is_NodeJS=Boolean(typeof process!="undefined"&&process.pid);Joose.Proto=Joose.stub();Joose.Proto.Empty=Joose.stub();Joose.Proto.Empty.meta={};
+(function(){Joose.Proto.Object=Joose.stub();var a=function(){var c=a.caller;if(c==b)c=c.caller;if(!c.SUPER)throw"Invalid call to SUPER";return c.SUPER[c.methodName].apply(this,arguments)},b=function(a){return this.SUPER.apply(this,a)};Joose.Proto.Object.prototype={SUPERARG:b,SUPER:a,INNER:function(){throw"Invalid call to INNER";},BUILD:function(a){return arguments.length==1&&typeof a=="object"&&a||{}},initialize:function(){},toString:function(){return"a "+this.meta.name}};Joose.Proto.Object.meta=
+{constructor:Joose.Proto.Object,methods:Joose.O.copy(Joose.Proto.Object.prototype),attributes:{}};Joose.Proto.Object.prototype.meta=Joose.Proto.Object.meta})();
+(function(){Joose.Proto.Class=function(){return this.initialize(this.BUILD.apply(this,arguments))||this};var a={VERSION:null,AUTHORITY:null,constructor:Joose.Proto.Class,superClass:null,name:null,attributes:null,methods:null,meta:null,c:null,defaultSuperClass:Joose.Proto.Object,BUILD:function(a,c){this.name=a;return{__extend__:c||{}}},initialize:function(a){a=a.__extend__;this.VERSION=a.VERSION;this.AUTHORITY=a.AUTHORITY;delete a.VERSION;delete a.AUTHORITY;this.c=this.extractConstructor(a);this.adaptConstructor(this.c);
+a.constructorOnly?delete a.constructorOnly:this.construct(a)},construct:function(a){if(this.prepareProps(a))this.processSuperClass(this.superClass=this.extractSuperClass(a)),this.adaptPrototype(this.c.prototype),this.finalize(a)},finalize:function(a){this.processStem(a);this.extend(a)},prepareProps:function(){return!0},extractConstructor:function(a){var c=a.hasOwnProperty("constructor")?a.constructor:this.defaultConstructor();delete a.constructor;return c},extractSuperClass:function(a){if(a.hasOwnProperty("isa")&&
+!a.isa)throw Error("Attempt to inherit from undefined superclass ["+this.name+"]");var c=a.isa||this.defaultSuperClass;delete a.isa;return c},processStem:function(){var a=this.superClass.meta;this.methods=Joose.O.getMutableCopy(a.methods||{});this.attributes=Joose.O.getMutableCopy(a.attributes||{})},initInstance:function(a,c){Joose.O.copyOwn(c,a)},defaultConstructor:function(){return function(a){var c=this.BUILD,c=c&&c.apply(this,arguments)||a||{},d=this.meta;d.initInstance(this,c);return d.hasMethod("initialize")&&
+this.initialize(c)||this}},processSuperClass:function(a){var c=a.prototype;if(!a.meta){var d=Joose.O.copy(c);d.isa=Joose.Proto.Empty;delete d.constructor;d=new this.defaultSuperClass.meta.constructor(null,d);a.meta=c.meta=d;d.c=a}this.c.prototype=Joose.O.getMutableCopy(c);this.c.superClass=c},adaptConstructor:function(a){a.meta=this;if(!a.hasOwnProperty("toString"))a.toString=function(){return this.meta.name}},adaptPrototype:function(a){a.constructor=this.c;a.meta=this},addMethod:function(a,c){c.SUPER=
+this.superClass.prototype;c.methodName=a;this.methods[a]=c;this.c.prototype[a]=c},addAttribute:function(a,c){this.attributes[a]=c;this.c.prototype[a]=c},removeMethod:function(a){delete this.methods[a];delete this.c.prototype[a]},removeAttribute:function(a){delete this.attributes[a];delete this.c.prototype[a]},hasMethod:function(a){return Boolean(this.methods[a])},hasAttribute:function(a){return this.attributes[a]!==void 0},hasOwnMethod:function(a){return this.hasMethod(a)&&this.methods.hasOwnProperty(a)},
+hasOwnAttribute:function(a){return this.hasAttribute(a)&&this.attributes.hasOwnProperty(a)},extend:function(a){Joose.O.eachOwn(a,function(a,b){b!="meta"&&b!="constructor"&&(Joose.O.isFunction(a)&&!a.meta?this.addMethod(b,a):this.addAttribute(b,a))},this)},subClassOf:function(a,c){return this.subClass(c,null,a)},subClass:function(a,c,d){a=a||{};a.isa=d||this.c;return(new this.constructor(c,a)).c},instantiate:function(){var a=function(){};a.prototype=this.c.prototype;a=new a;return this.c.apply(a,arguments)||
+a}};Joose.Proto.Class.prototype=Joose.O.getMutableCopy(Joose.Proto.Object.prototype);Joose.O.extend(Joose.Proto.Class.prototype,a);Joose.Proto.Class.prototype.meta=new Joose.Proto.Class("Joose.Proto.Class",a);Joose.Proto.Class.meta.addMethod("isa",function(a){var c=function(){};c.prototype=this.c.prototype;return new c instanceof a})})();Joose.Managed=Joose.stub();
+Joose.Managed.Property=(new Joose.Proto.Class("Joose.Managed.Property",{name:null,init:null,value:null,definedIn:null,initialize:function(a){Joose.Managed.Property.superClass.initialize.call(this,a);this.computeValue()},computeValue:function(){this.value=this.init},preApply:function(){},postUnApply:function(){},apply:function(a){a[this.name]=this.value},isAppliedTo:function(a){return a[this.name]==this.value},unapply:function(a){if(!this.isAppliedTo(a))throw"Unapply of property ["+this.name+"] from ["+
+a+"] failed";delete a[this.name]},cloneProps:function(){return{name:this.name,init:this.init,definedIn:this.definedIn}},clone:function(a){var b=this.cloneProps();b.name=a||b.name;return new this.constructor(b)}})).c;Joose.Managed.Property.ConflictMarker=(new Joose.Proto.Class("Joose.Managed.Property.ConflictMarker",{isa:Joose.Managed.Property,apply:function(a){throw Error("Attempt to apply ConflictMarker ["+this.name+"] to ["+a+"]");}})).c;
+Joose.Managed.Property.Requirement=(new Joose.Proto.Class("Joose.Managed.Property.Requirement",{isa:Joose.Managed.Property,apply:function(a){if(!a.meta.hasMethod(this.name))throw Error("Requirement ["+this.name+"], defined in ["+this.definedIn.definedIn.name+"] is not satisfied for class ["+a+"]");},unapply:function(){}})).c;
+Joose.Managed.Property.Attribute=(new Joose.Proto.Class("Joose.Managed.Property.Attribute",{isa:Joose.Managed.Property,slot:null,initialize:function(){Joose.Managed.Property.Attribute.superClass.initialize.apply(this,arguments);this.slot=this.name},apply:function(a){a.prototype[this.slot]=this.value},isAppliedTo:function(a){return a.prototype[this.slot]==this.value},unapply:function(a){if(!this.isAppliedTo(a))throw"Unapply of property ["+this.name+"] from ["+a+"] failed";delete a.prototype[this.slot]},
+clearValue:function(a){delete a[this.slot]},hasValue:function(a){return a.hasOwnProperty(this.slot)},getRawValueFrom:function(a){return a[this.slot]},setRawValueTo:function(a,b){a[this.slot]=b;return this}})).c;
+Joose.Managed.Property.MethodModifier=(new Joose.Proto.Class("Joose.Managed.Property.MethodModifier",{isa:Joose.Managed.Property,prepareWrapper:function(){throw"Abstract method [prepareWrapper] of "+this+" was called";},apply:function(a){var b=this.name,c=a.prototype,d=c.hasOwnProperty(b),e=c[b],f=a.meta.superClass.prototype,a=this.prepareWrapper({name:b,modifier:this.value,isOwn:d,originalCall:d?e:function(){return f[b].apply(this,arguments)},superProto:f,target:a});if(d)a.__ORIGINAL__=e;a.__CONTAIN__=
+this.value;a.__METHOD__=this;c[b]=a},isAppliedTo:function(a){return(a=a.prototype[this.name])&&a.__CONTAIN__==this.value},unapply:function(a){var b=this.name,c=a.prototype,d=c[b].__ORIGINAL__;if(!this.isAppliedTo(a))throw"Unapply of method ["+b+"] from class ["+a+"] failed";d?c[b]=d:delete c[b]}})).c;
+Joose.Managed.Property.MethodModifier.Override=(new Joose.Proto.Class("Joose.Managed.Property.MethodModifier.Override",{isa:Joose.Managed.Property.MethodModifier,prepareWrapper:function(a){var b=a.modifier,c=a.originalCall,d=a.superProto,e=d.meta.constructor,f=c;(e==Joose.Proto.Class||e==Joose.Proto.Object)&&(!a.isOwn||!c.IS_OVERRIDE)&&(f=function(){var a=this.SUPER;this.SUPER=d.SUPER;var b=c.apply(this,arguments);this.SUPER=a;return b});a=function(){var a=this.SUPER;this.SUPER=f;var c=b.apply(this,
+arguments);this.SUPER=a;return c};a.IS_OVERRIDE=!0;return a}})).c;Joose.Managed.Property.MethodModifier.Put=(new Joose.Proto.Class("Joose.Managed.Property.MethodModifier.Put",{isa:Joose.Managed.Property.MethodModifier.Override,prepareWrapper:function(a){if(a.isOwn)throw"Method ["+a.name+"] is applying over something ["+a.originalCall+"] in class ["+a.target+"]";return Joose.Managed.Property.MethodModifier.Put.superClass.prepareWrapper.call(this,a)}})).c;
+Joose.Managed.Property.MethodModifier.After=(new Joose.Proto.Class("Joose.Managed.Property.MethodModifier.After",{isa:Joose.Managed.Property.MethodModifier,prepareWrapper:function(a){var b=a.modifier,c=a.originalCall;return function(){var a=c.apply(this,arguments);b.apply(this,arguments);return a}}})).c;
+Joose.Managed.Property.MethodModifier.Before=(new Joose.Proto.Class("Joose.Managed.Property.MethodModifier.Before",{isa:Joose.Managed.Property.MethodModifier,prepareWrapper:function(a){var b=a.modifier,c=a.originalCall;return function(){b.apply(this,arguments);return c.apply(this,arguments)}}})).c;
+Joose.Managed.Property.MethodModifier.Around=(new Joose.Proto.Class("Joose.Managed.Property.MethodModifier.Around",{isa:Joose.Managed.Property.MethodModifier,prepareWrapper:function(a){var b=a.modifier,c=a.originalCall,d,e=function(){return c.apply(d,arguments)};return function(){d=this;var a=[e];a.push.apply(a,arguments);return b.apply(this,a)}}})).c;
+Joose.Managed.Property.MethodModifier.Augment=(new Joose.Proto.Class("Joose.Managed.Property.MethodModifier.Augment",{isa:Joose.Managed.Property.MethodModifier,prepareWrapper:function(a){var b=function(){var a=[],d=b;do a.push(d.IS_AUGMENT?d.__CONTAIN__:d),d=d.IS_AUGMENT&&(d.__ORIGINAL__||d.SUPER[d.methodName]);while(d);d=this.INNER;this.INNER=function(){var b=a.pop();return b?b.apply(this,arguments):void 0};var e=this.INNER.apply(this,arguments);this.INNER=d;return e};b.methodName=a.name;b.SUPER=
+a.superProto;b.IS_AUGMENT=!0;return b}})).c;
+Joose.Managed.PropertySet=(new Joose.Proto.Class("Joose.Managed.PropertySet",{isa:Joose.Managed.Property,properties:null,propertyMetaClass:Joose.Managed.Property,initialize:function(a){Joose.Managed.PropertySet.superClass.initialize.call(this,a);this.properties=a.properties||{}},addProperty:function(a,b){var c=b.meta||this.propertyMetaClass;delete b.meta;b.definedIn=this;b.name=a;return this.properties[a]=new c(b)},addPropertyObject:function(a){return this.properties[a.name]=a},removeProperty:function(a){var b=
+this.properties[a];delete this.properties[a];return b},haveProperty:function(a){return this.properties[a]!=null},haveOwnProperty:function(a){return this.haveProperty(a)&&this.properties.hasOwnProperty(a)},getProperty:function(a){return this.properties[a]},each:function(a,b){Joose.O.each(this.properties,a,b||this)},eachOwn:function(a,b){Joose.O.eachOwn(this.properties,a,b||this)},eachAll:function(a,b){this.each(a,b)},cloneProps:function(){var a=Joose.Managed.PropertySet.superClass.cloneProps.call(this);
+a.propertyMetaClass=this.propertyMetaClass;return a},clone:function(a){a=this.cleanClone(a);a.properties=Joose.O.copyOwn(this.properties);return a},cleanClone:function(a){var b=this.cloneProps();b.name=a||b.name;return new this.constructor(b)},alias:function(a){var b=this.properties;Joose.O.each(a,function(a,d){var e=b[d];e&&this.addPropertyObject(e.clone(a))},this)},exclude:function(a){var b=this.properties;Joose.A.each(a,function(a){delete b[a]})},beforeConsumedBy:function(){},flattenTo:function(a){var b=
+a.properties;this.eachOwn(function(c,d){var e=b[d];e instanceof Joose.Managed.Property.ConflictMarker||(e==null?a.addPropertyObject(c):e!=c&&(a.removeProperty(d),a.addProperty(d,{meta:Joose.Managed.Property.ConflictMarker})))},this)},composeTo:function(a){this.eachOwn(function(b,c){a.haveOwnProperty(c)||a.addPropertyObject(b)})},composeFrom:function(){if(arguments.length){var a=this.cleanClone();Joose.A.each(arguments,function(b){var c=!(b instanceof Joose.Managed.PropertySet),d=c?b.propertySet:b;
+d.beforeConsumedBy(this,a);if(c){if(b.alias||b.exclude)d=d.clone();b.alias&&d.alias(b.alias);b.exclude&&d.exclude(b.exclude)}d.flattenTo(a)},this);a.composeTo(this)}},preApply:function(a){this.eachOwn(function(b){b.preApply(a)})},apply:function(a){this.eachOwn(function(b){b.apply(a)})},unapply:function(a){this.eachOwn(function(b){b.unapply(a)})},postUnApply:function(a){this.eachOwn(function(b){b.postUnApply(a)})}})).c;
+(function(){var a=1;Joose.Managed.PropertySet.Mutable=(new Joose.Proto.Class("Joose.Managed.PropertySet.Mutable",{isa:Joose.Managed.PropertySet,ID:null,derivatives:null,opened:null,composedFrom:null,initialize:function(b){Joose.Managed.PropertySet.Mutable.superClass.initialize.call(this,b);this.opened=1;this.derivatives={};this.ID=a++;this.composedFrom=[]},addComposeInfo:function(){this.ensureOpen();Joose.A.each(arguments,function(a){this.composedFrom.push(a);(a instanceof Joose.Managed.PropertySet?
+a:a.propertySet).derivatives[this.ID]=this},this)},removeComposeInfo:function(){this.ensureOpen();Joose.A.each(arguments,function(a){for(var c=0;c<this.composedFrom.length;){var d=this.composedFrom[c],d=d instanceof Joose.Managed.PropertySet?d:d.propertySet;a==d?(delete d.derivatives[this.ID],this.composedFrom.splice(c,1)):c++}},this)},ensureOpen:function(){if(!this.opened)throw"Mutation of closed property set: ["+this.name+"]";},addProperty:function(a,c){this.ensureOpen();return Joose.Managed.PropertySet.Mutable.superClass.addProperty.call(this,
+a,c)},addPropertyObject:function(a){this.ensureOpen();return Joose.Managed.PropertySet.Mutable.superClass.addPropertyObject.call(this,a)},removeProperty:function(a){this.ensureOpen();return Joose.Managed.PropertySet.Mutable.superClass.removeProperty.call(this,a)},composeFrom:function(){this.ensureOpen();return Joose.Managed.PropertySet.Mutable.superClass.composeFrom.apply(this,this.composedFrom)},open:function(){this.opened++;this.opened==1&&(Joose.O.each(this.derivatives,function(a){a.open()}),this.deCompose())},
+close:function(){if(!this.opened)throw"Unmatched 'close' operation on property set: ["+this.name+"]";this.opened==1&&(this.reCompose(),Joose.O.each(this.derivatives,function(a){a.close()}));this.opened--},reCompose:function(){this.composeFrom()},deCompose:function(){this.eachOwn(function(a,c){a.definedIn!=this&&this.removeProperty(c)},this)}})).c})();Joose.Managed.StemElement=function(){throw"Modules may not be instantiated.";};
+Joose.Managed.StemElement.Attributes=(new Joose.Proto.Class("Joose.Managed.StemElement.Attributes",{isa:Joose.Managed.PropertySet.Mutable,propertyMetaClass:Joose.Managed.Property.Attribute})).c;Joose.Managed.StemElement.Methods=(new Joose.Proto.Class("Joose.Managed.StemElement.Methods",{isa:Joose.Managed.PropertySet.Mutable,propertyMetaClass:Joose.Managed.Property.MethodModifier.Put,preApply:function(){},postUnApply:function(){}})).c;
+Joose.Managed.StemElement.Requirements=(new Joose.Proto.Class("Joose.Managed.StemElement.Requirements",{isa:Joose.Managed.PropertySet.Mutable,propertyMetaClass:Joose.Managed.Property.Requirement,alias:function(){},exclude:function(){},flattenTo:function(a){this.each(function(b,c){a.haveProperty(c)||a.addPropertyObject(b)})},composeTo:function(a){this.flattenTo(a)},preApply:function(){},postUnApply:function(){}})).c;
+Joose.Managed.StemElement.MethodModifiers=(new Joose.Proto.Class("Joose.Managed.StemElement.MethodModifiers",{isa:Joose.Managed.PropertySet.Mutable,propertyMetaClass:null,addProperty:function(a,b){var c=b.meta;delete b.meta;b.definedIn=this;b.name=a;var c=new c(b),d=this.properties;d[a]||(d[a]=[]);d[a].push(c);return c},addPropertyObject:function(a){var b=a.name,c=this.properties;c[b]||(c[b]=[]);c[b].push(a);return a},removeProperty:function(a){if(this.haveProperty(a)){var b=this.properties,c=b[a].pop();
+b[a].length||Joose.Managed.StemElement.MethodModifiers.superClass.removeProperty.call(this,a);return c}},alias:function(){},exclude:function(){},flattenTo:function(a){var b=a.properties;this.each(function(a,d){var e=b[d];e==null&&(e=b[d]=[]);Joose.A.each(a,function(a){Joose.A.exists(e,a)||e.push(a)})})},composeTo:function(a){this.flattenTo(a)},deCompose:function(){this.each(function(a){for(var b=0;b<a.length;)a[b].definedIn!=this?a.splice(b,1):b++})},preApply:function(){},postUnApply:function(){},
+apply:function(a){this.each(function(b){Joose.A.each(b,function(b){b.apply(a)})})},unapply:function(a){this.each(function(b){for(var c=b.length-1;c>=0;c--)b[c].unapply(a)})}})).c;
+Joose.Managed.PropertySet.Composition=(new Joose.Proto.Class("Joose.Managed.PropertySet.Composition",{isa:Joose.Managed.PropertySet.Mutable,propertyMetaClass:Joose.Managed.PropertySet.Mutable,processOrder:null,each:function(a,b){var c=this.properties,b=b||this;Joose.A.each(this.processOrder,function(d){a.call(b,c[d],d)})},eachR:function(a,b){var c=this.properties,b=b||this;Joose.A.eachR(this.processOrder,function(d){a.call(b,c[d],d)})},clone:function(a){var b=this.cleanClone(a);this.each(function(a){b.addPropertyObject(a.clone())});
+return b},alias:function(a){this.each(function(b){b.alias(a)})},exclude:function(a){this.each(function(b){b.exclude(a)})},flattenTo:function(a){var b=a.properties;this.each(function(c,d){var e=b[d]||a.addProperty(d,{meta:c.constructor});c.flattenTo(e)})},composeTo:function(a){var b=a.properties;this.each(function(c,d){var e=b[d]||a.addProperty(d,{meta:c.constructor});c.composeTo(e)})},deCompose:function(){this.eachR(function(a){a.open()});Joose.Managed.PropertySet.Composition.superClass.deCompose.call(this)},
+reCompose:function(){Joose.Managed.PropertySet.Composition.superClass.reCompose.call(this);this.each(function(a){a.close()})},unapply:function(a){this.eachR(function(b){b.unapply(a)})}})).c;
+Joose.Managed.Stem=(new Joose.Proto.Class("Joose.Managed.Stem",{isa:Joose.Managed.PropertySet.Composition,targetMeta:null,attributesMC:Joose.Managed.StemElement.Attributes,methodsMC:Joose.Managed.StemElement.Methods,requirementsMC:Joose.Managed.StemElement.Requirements,methodsModifiersMC:Joose.Managed.StemElement.MethodModifiers,processOrder:["attributes","methods","requirements","methodsModifiers"],initialize:function(a){Joose.Managed.Stem.superClass.initialize.call(this,a);a=this.targetMeta;this.addProperty("attributes",
+{meta:this.attributesMC,properties:a?a.attributes:{}});this.addProperty("methods",{meta:this.methodsMC,properties:a?a.methods:{}});this.addProperty("requirements",{meta:this.requirementsMC});this.addProperty("methodsModifiers",{meta:this.methodsModifiersMC})},reCompose:function(){var a=this.targetMeta.c;this.preApply(a);Joose.Managed.Stem.superClass.reCompose.call(this);this.apply(a)},deCompose:function(){var a=this.targetMeta.c;this.unapply(a);Joose.Managed.Stem.superClass.deCompose.call(this);this.postUnApply(a)}})).c;
+Joose.Managed.Builder=(new Joose.Proto.Class("Joose.Managed.Builder",{targetMeta:null,_buildStart:function(a,b){a.stem.open();Joose.A.each(["trait","traits","removeTrait","removeTraits","does","doesnot","doesnt"],function(c){b[c]&&(this[c](a,b[c]),delete b[c])},this)},_extend:function(a){if(!Joose.O.isEmpty(a)){var b=this.targetMeta;this._buildStart(b,a);Joose.O.eachOwn(a,function(a,d){var e=this[d];if(!e)throw Error("Unknown builder ["+d+"] was used during extending of ["+b.c+"]");e.call(this,b,
+a)},this);this._buildComplete(b,a)}},_buildComplete:function(a){a.stem.close()},methods:function(a,b){Joose.O.eachOwn(b,function(b,d){a.addMethod(d,b)})},removeMethods:function(a,b){Joose.A.each(b,function(b){a.removeMethod(b)})},have:function(a,b){Joose.O.eachOwn(b,function(b,d){a.addAttribute(d,b)})},havenot:function(a,b){Joose.A.each(b,function(b){a.removeAttribute(b)})},havent:function(a,b){this.havenot(a,b)},after:function(a,b){Joose.O.each(b,function(b,d){a.addMethodModifier(d,b,Joose.Managed.Property.MethodModifier.After)})},
+before:function(a,b){Joose.O.each(b,function(b,d){a.addMethodModifier(d,b,Joose.Managed.Property.MethodModifier.Before)})},override:function(a,b){Joose.O.each(b,function(b,d){a.addMethodModifier(d,b,Joose.Managed.Property.MethodModifier.Override)})},around:function(a,b){Joose.O.each(b,function(b,d){a.addMethodModifier(d,b,Joose.Managed.Property.MethodModifier.Around)})},augment:function(a,b){Joose.O.each(b,function(b,d){a.addMethodModifier(d,b,Joose.Managed.Property.MethodModifier.Augment)})},removeModifier:function(a,
+b){Joose.A.each(b,function(b){a.removeMethodModifier(b)})},does:function(a,b){Joose.A.each(Joose.O.wantArray(b),function(b){a.addRole(b)})},doesnot:function(a,b){Joose.A.each(Joose.O.wantArray(b),function(b){a.removeRole(b)})},doesnt:function(a,b){this.doesnot(a,b)},trait:function(){this.traits.apply(this,arguments)},traits:function(a,b){if(!a.firstPass){if(!a.meta.isDetached)throw"Can't apply trait to not detached class";a.meta.extend({does:b})}},removeTrait:function(){this.removeTraits.apply(this,
+arguments)},removeTraits:function(a,b){if(!a.meta.isDetached)throw"Can't remove trait from not detached class";a.meta.extend({doesnot:b})}})).c;
+Joose.Managed.Class=(new Joose.Proto.Class("Joose.Managed.Class",{isa:Joose.Proto.Class,stem:null,stemClass:Joose.Managed.Stem,stemClassCreated:!1,builder:null,builderClass:Joose.Managed.Builder,builderClassCreated:!1,isDetached:!1,firstPass:!0,skipTraitsAnchor:{},BUILD:function(){var a=Joose.Managed.Class.superClass.BUILD.apply(this,arguments),b=a.__extend__,c=Joose.O.wantArray(b.trait||b.traits||[]);delete b.trait;delete b.traits;Joose.A.each(Joose.O.wantArray(b.does||[]),function(a){a=a.meta instanceof
+Joose.Managed.Class?a:a.role;a.meta.meta.isDetached&&c.push(a.meta.constructor)});if(c.length)b.traits=c;return a},initInstance:function(a,b){Joose.O.each(this.attributes,function(c,d){c instanceof Joose.Managed.Attribute?c.initFromConfig(a,b):b.hasOwnProperty(d)&&(a[d]=b[d])})},defaultConstructor:function(){return function(a,b){var c=this.meta,d=a==c.skipTraitsAnchor,e=this.BUILD,e=e&&e.apply(this,d?b:arguments)||(d?b[0]:a)||{},f=e.__extend__||e,i=f.trait||f.traits;if(i||f.detached)if(delete f.trait,
+delete f.traits,delete f.detached,!d)return d=c.subClass({does:i||[]},c.name).meta,d.isDetached=!0,d.instantiate(c.skipTraitsAnchor,arguments);c.initInstance(this,e);return c.hasMethod("initialize")&&this.initialize(e)||this}},finalize:function(a){Joose.Managed.Class.superClass.finalize.call(this,a);this.stem.close();this.afterMutate()},processStem:function(){Joose.Managed.Class.superClass.processStem.call(this);this.builder=new this.builderClass({targetMeta:this});this.stem=new this.stemClass({name:this.name,
+targetMeta:this});var a=this.getClassInAttribute("builderClass");if(a)this.builderClassCreated=!0,this.addAttribute("builderClass",this.subClassOf(a));if(a=this.getClassInAttribute("stemClass"))this.stemClassCreated=!0,this.addAttribute("stemClass",this.subClassOf(a))},extend:function(a){a.builder&&(this.getBuilderTarget().meta.extend(a.builder),delete a.builder);a.stem&&(this.getStemTarget().meta.extend(a.stem),delete a.stem);this.builder._extend(a);this.firstPass=!1;this.stem.opened||this.afterMutate()},
+getBuilderTarget:function(){var a=this.getClassInAttribute("builderClass");if(!a)throw"Attempt to extend a builder on non-meta class";return a},getStemTarget:function(){var a=this.getClassInAttribute("stemClass");if(!a)throw"Attempt to extend a stem on non-meta class";return a},getClassInAttribute:function(a){a=this.getAttribute(a);if(a instanceof Joose.Managed.Property.Attribute)a=a.value;return a},addMethodModifier:function(a,b,c){var d={};d.init=b;d.meta=c;return this.stem.properties.methodsModifiers.addProperty(a,
+d)},removeMethodModifier:function(a){return this.stem.properties.methodsModifiers.removeProperty(a)},addMethod:function(a,b,c){c=c||{};c.init=b;return this.stem.properties.methods.addProperty(a,c)},addAttribute:function(a,b,c){c=c||{};c.init=b;return this.stem.properties.attributes.addProperty(a,c)},removeMethod:function(a){return this.stem.properties.methods.removeProperty(a)},removeAttribute:function(a){return this.stem.properties.attributes.removeProperty(a)},hasMethod:function(a){return this.stem.properties.methods.haveProperty(a)},
+hasAttribute:function(a){return this.stem.properties.attributes.haveProperty(a)},hasMethodModifiersFor:function(a){return this.stem.properties.methodsModifiers.haveProperty(a)},hasOwnMethod:function(a){return this.stem.properties.methods.haveOwnProperty(a)},hasOwnAttribute:function(a){return this.stem.properties.attributes.haveOwnProperty(a)},getMethod:function(a){return this.stem.properties.methods.getProperty(a)},getAttribute:function(a){return this.stem.properties.attributes.getProperty(a)},eachRole:function(a,
+b,c){Joose.A.each(a,function(a,e){b.call(c||this,a,a.meta instanceof Joose.Managed.Class?a:a.role,e)},this)},addRole:function(){this.eachRole(arguments,function(a,b){this.beforeRoleAdd(b);var c=a;b!=a?(c.propertySet=b.meta.stem,delete c.role):c=c.meta.stem;this.stem.addComposeInfo(c)},this)},beforeRoleAdd:function(a){a=a.meta;a.builderClassCreated&&this.getBuilderTarget().meta.extend({does:[a.getBuilderTarget()]});a.stemClassCreated&&this.getStemTarget().meta.extend({does:[a.getStemTarget()]});a.meta.isDetached&&
+!this.firstPass&&this.builder.traits(this,a.constructor)},beforeRoleRemove:function(a){a=a.meta;a.builderClassCreated&&this.getBuilderTarget().meta.extend({doesnt:[a.getBuilderTarget()]});a.stemClassCreated&&this.getStemTarget().meta.extend({doesnt:[a.getStemTarget()]});a.meta.isDetached&&!this.firstPass&&this.builder.removeTraits(this,a.constructor)},removeRole:function(){this.eachRole(arguments,function(a,b){this.beforeRoleRemove(b);this.stem.removeComposeInfo(b.meta.stem)},this)},getRoles:function(){return Joose.A.map(this.stem.composedFrom,
+function(a){if(!(a instanceof Joose.Managed.PropertySet))return a.propertySet;return a.targetMeta.c})},does:function(a){for(var b=this.getRoles(),c=0;c<b.length;c++)if(a==b[c])return!0;for(c=0;c<b.length;c++)if(b[c].meta.does(a))return!0;b=this.superClass.meta;if(this.superClass!=Joose.Proto.Empty&&b&&b.meta&&b.meta.hasMethod("does"))return b.does(a);return!1},getMethods:function(){return this.stem.properties.methods},getAttributes:function(){return this.stem.properties.attributes},afterMutate:function(){},
+getCurrentMethod:function(){for(var a=arguments.callee.caller,b=0;a&&b<5;a=a.caller,b++)if(a.__METHOD__)return a.__METHOD__;return null}})).c;
+Joose.Managed.Role=(new Joose.Managed.Class("Joose.Managed.Role",{isa:Joose.Managed.Class,have:{defaultSuperClass:Joose.Proto.Empty,builderRole:null,stemRole:null},methods:{defaultConstructor:function(){return function(){throw Error("Roles cant be instantiated");}},processSuperClass:function(){if(this.superClass!=this.defaultSuperClass)throw Error("Roles can't inherit from anything");},getBuilderTarget:function(){if(!this.builderRole)this.builderRole=(new this.constructor).c,this.builderClassCreated=
+!0;return this.builderRole},getStemTarget:function(){if(!this.stemRole)this.stemRole=(new this.constructor).c,this.stemClassCreated=!0;return this.stemRole},addRequirement:function(a){this.stem.properties.requirements.addProperty(a,{})}},stem:{methods:{apply:function(){},unapply:function(){}}},builder:{methods:{requires:function(a,b){Joose.A.each(Joose.O.wantArray(b),function(b){a.addRequirement(b)},this)}}}})).c;
+Joose.Managed.Attribute=(new Joose.Managed.Class("Joose.Managed.Attribute",{isa:Joose.Managed.Property.Attribute,have:{is:null,builder:null,isPrivate:!1,role:null,publicName:null,setterName:null,getterName:null,readable:!1,writeable:!1,hasGetter:!1,hasSetter:!1,required:!1,canInlineSetRaw:!0,canInlineGetRaw:!0},after:{initialize:function(){var a=this.name;this.publicName=a.replace(/^_+/,"");this.slot=this.isPrivate?"$$"+a:a;this.setterName=this.setterName||this.getSetterName();this.getterName=this.getterName||
+this.getGetterName();this.readable=this.hasGetter=/^r/i.test(this.is);this.writeable=this.hasSetter=/^.w/i.test(this.is)}},override:{computeValue:function(){Joose.O.isFunction(this.init)||this.SUPER()},preApply:function(a){a.meta.extend({methods:this.getAccessorsFor(a)})},postUnApply:function(a){a.meta.extend({removeMethods:this.getAccessorsFrom(a)})}},methods:{getAccessorsFor:function(a){var a=a.meta,b=this.setterName,c=this.getterName,d={};if(this.hasSetter&&!a.hasMethod(b))d[b]=this.getSetter(),
+d[b].ACCESSOR_FROM=this;if(this.hasGetter&&!a.hasMethod(c))d[c]=this.getGetter(),d[c].ACCESSOR_FROM=this;return d},getAccessorsFrom:function(a){var b=a.meta,a=this.setterName,c=this.getterName,d=this.hasSetter&&b.getMethod(a),b=this.hasGetter&&b.getMethod(c),e=[];d&&d.value.ACCESSOR_FROM==this&&e.push(a);b&&b.value.ACCESSOR_FROM==this&&e.push(c);return e},getGetterName:function(){return"get"+Joose.S.uppercaseFirst(this.publicName)},getSetterName:function(){return"set"+Joose.S.uppercaseFirst(this.publicName)},
+getSetter:function(){var a=this,b=a.slot;return a.canInlineSetRaw?function(a){this[b]=a;return this}:function(){return a.setRawValueTo.apply(this,arguments)}},getGetter:function(){var a=this,b=a.slot;return a.canInlineGetRaw?function(){return this[b]}:function(){return a.getRawValueFrom.apply(this,arguments)}},getValueFrom:function(a){var b=this.getterName;if(this.readable&&a.meta.hasMethod(b))return a[b]();return this.getRawValueFrom(a)},setValueTo:function(a,b){var c=this.setterName;if(this.writeable&&
+a.meta.hasMethod(c))a[c](b);else this.setRawValueTo(a,b)},initFromConfig:function(a,b){var c=this.name,d,e=!1;b.hasOwnProperty(c)?(d=b[c],e=!0):Joose.O.isFunction(this.init)?(d=this.init.call(a,b,c),e=!0):this.builder&&(d=a[this.builder.replace(/^this\./,"")](b,c),e=!0);if(e)this.setRawValueTo(a,d);else if(this.required)throw Error("Required attribute ["+c+"] is missed during initialization of "+a);}}})).c;
+Joose.Managed.PropertySet.Namespace=(new Joose.Proto.Class("Joose.Managed.PropertySet.Namespace",{isa:Joose.Managed.PropertySet,propertyMetaClass:null,targetMeta:null,container:null,initialize:function(a){Joose.Managed.PropertySet.Namespace.superClass.initialize.call(this,a);this.container=this.targetMeta.c},addProperty:function(a,b){if(b&&b.meta&&b.meta.meta.hasAttribute("ns"))b.meta.parentNs=this.targetMeta.ns;return this.container[a]=this.properties[a]=b},removeProperty:function(a){try{delete this.container[a]}catch(b){this.container[a]=
+void 0}return Joose.Managed.PropertySet.Namespace.superClass.removeProperty.call(this,a)}})).c;
+Joose.Managed.Attribute.Builder=(new Joose.Managed.Role("Joose.Managed.Attribute.Builder",{have:{defaultAttributeClass:Joose.Managed.Attribute},builder:{methods:{has:function(a,b){Joose.O.eachOwn(b,function(b,d){if(typeof b!="object"||b==null||b.constructor==/ /.constructor)b={init:b};b.meta=b.meta||a.defaultAttributeClass;if(/^__/.test(d))d=d.replace(/^_+/,""),b.isPrivate=!0;a.addAttribute(d,b.init,b)},this)},hasnot:function(a,b){this.havenot(a,b)},hasnt:function(a,b){this.hasnot(a,b)}}}})).c;
+Joose.Managed.My=(new Joose.Managed.Role("Joose.Managed.My",{have:{myClass:null,needToReAlias:!1},methods:{createMy:function(a){var b=this instanceof Joose.Managed.Role,c=a.my||{};delete a.my;a=this.superClass.meta.myClass;if(!b&&!c.isa&&a)c.isa=a;if(!c.meta&&!c.isa)c.meta=this.constructor;c=this.myClass=Class(c);a=this.c;a.prototype.my=a.my=b?c:new c({HOST:a});this.needToReAlias=!0},aliasStaticMethods:function(){this.needToReAlias=!1;var a=this.c,b=this.myClass.prototype;Joose.O.eachOwn(a,function(b,
+d){b.IS_ALIAS&&delete a[d]});this.myClass.meta.stem.properties.methods.each(function(c,d){if(!a[d])(a[d]=function(){return b[d].apply(a.my,arguments)}).IS_ALIAS=!0})}},override:{extend:function(a){var b=this.myClass;!b&&this.superClass.meta.myClass&&this.createMy(a);if(a.my)b?(this.needToReAlias=!0,b.meta.extend(a.my),delete a.my):this.createMy(a);this.SUPER(a);this.needToReAlias&&!(this instanceof Joose.Managed.Role)&&this.aliasStaticMethods()}},before:{addRole:function(){var a;Joose.A.each(arguments,
+function(b){if(!b)throw Error("Attempt to consume an undefined Role into ["+this.name+"]");b=b.meta instanceof Joose.Managed.Class?b:b.role;if(b.meta.meta.hasAttribute("myClass")&&b.meta.myClass)this.myClass?(a=this.myClass.meta.stem,a.opened||a.open(),a.addComposeInfo(b.my.meta.stem)):this.createMy({my:{does:b.meta.myClass}})},this);if(a)a.close(),this.needToReAlias=!0},removeRole:function(){if(this.myClass){var a=this.myClass.meta.stem;a.open();Joose.A.each(arguments,function(b){if(b.meta.meta.hasAttribute("myClass")&&
+b.meta.myClass)a.removeComposeInfo(b.my.meta.stem),this.needToReAlias=!0},this);a.close()}}}})).c;Joose.Namespace=Joose.stub();
+Joose.Namespace.Able=(new Joose.Managed.Role("Joose.Namespace.Able",{have:{parentNs:null,ns:null,bodyFunc:null},before:{extend:function(a){if(a.body)this.bodyFunc=a.body,delete a.body}},after:{adaptConstructor:function(){var a=(this.name||"").split(".").pop();this.ns=new Joose.Managed.PropertySet.Namespace({name:a,targetMeta:this})},afterMutate:function(){var a=this.bodyFunc;delete this.bodyFunc;a&&Joose.Namespace.Manager.my.executeIn(this.c,a)}}})).c;
+Joose.Managed.Bootstrap=(new Joose.Managed.Role("Joose.Managed.Bootstrap",{does:[Joose.Namespace.Able,Joose.Managed.My,Joose.Managed.Attribute.Builder]})).c;Joose.Meta=Joose.stub();Joose.Meta.Object=(new Joose.Proto.Class("Joose.Meta.Object",{isa:Joose.Proto.Object})).c;Joose.Meta.Class=(new Joose.Managed.Class("Joose.Meta.Class",{isa:Joose.Managed.Class,does:Joose.Managed.Bootstrap,have:{defaultSuperClass:Joose.Meta.Object}})).c;
+Joose.Meta.Role=(new Joose.Meta.Class("Joose.Meta.Role",{isa:Joose.Managed.Role,does:Joose.Managed.Bootstrap})).c;
+Joose.Namespace.Keeper=(new Joose.Meta.Class("Joose.Namespace.Keeper",{isa:Joose.Meta.Class,have:{externalConstructor:null},methods:{defaultConstructor:function(){return function(){var a=arguments.callee.meta;if(a instanceof Joose.Namespace.Keeper)throw Error("Module ["+a.c+"] may not be instantiated. Forgot to 'use' the class with the same name?");var b=a.externalConstructor;if(typeof b=="function")return b.meta=a,b.apply(this,arguments);throw"NamespaceKeeper of ["+a.name+"] was planted incorrectly.";
+}},plant:function(a){this.copyNamespaceState(a);var b=this.c;b.meta=a.meta;b.meta.c=b;b.meta.externalConstructor=a},copyNamespaceState:function(a){a=a.meta;a.parentNs=this.parentNs;a.ns=this.ns}}})).c;
+Joose.Namespace.Manager=(new Joose.Managed.Class("Joose.Namespace.Manager",{have:{global:null,globalNs:null,current:null},methods:{initialize:function(){var a=this.global=(new Joose.Namespace.Keeper("")).c;(this.globalNs=a.meta.ns).container=Joose.is_NodeJS&&global||Joose.top;a.meta.parentNs=a;this.current=[a]},getCurrent:function(){return this.current[0]},executeIn:function(a,b){var c=this.current,d=a.meta.ns?a.meta.ns.container:a;c.unshift(a);d=b.call(d,a);c.shift();return d},earlyCreate:function(a,
+b,c){c.constructorOnly=!0;return(new b(a,c)).c},create:function(a,b,c){if(!a)return(new b(a,c)).c;var d=this;if(/^\./.test(a))return this.executeIn(this.global,function(){return d.create(a.replace(/^\./,""),b,c)});props=c||{};for(var e=Joose.S.saneSplit(a,"."),f=this.getCurrent(),i=Joose.S.saneSplit(f.meta.name,"."),k=0;k<e.length;k++){var h=e[k],l=k==e.length-1;if(h=="meta"||h=="my"||!h)throw"Module name ["+a+"] may not include a part called 'meta' or 'my' or empty part.";var g=(f==this.global?this.global.meta.ns.container:
+f)[h];i.push(h);var j=i.join("."),m=!1;if(typeof g=="undefined")l?(g=this.earlyCreate(j,b,props),m=!0):g=(new Joose.Namespace.Keeper(j)).c,f.meta?f.meta.ns.addProperty(h,g):f[h]=g;else if(l&&g&&g.meta)if(f=g.meta,b==Joose.Namespace.Keeper)f.extend(props);else if(f instanceof Joose.Namespace.Keeper)f.plant(this.earlyCreate(j,b,props)),m=!0;else throw Error("Double declaration of ["+j+"]");else if(l&&(!g||!g.meta||!g.meta.meta||!g.meta.meta.hasAttribute("ns")))throw"Trying to setup module "+j+" failed. There is already something: "+
+g;m&&g.meta.construct(props);f=g}return f},prepareProperties:function(a,b,c,d){a&&typeof a!="string"&&(b=a,a=null);var e;if(b&&b.meta)e=b.meta,delete b.meta;e||(e=b&&typeof b.isa=="function"&&b.isa.meta?b.isa.meta.constructor:c);return d.call(this,a,e,b)},getDefaultHelperFor:function(a){var b=this;return function(c,d){return b.prepareProperties(c,d,a,function(a,c,d){return b.create(a,c,d)})}},register:function(a,b,c){var d=this;if(this.meta.hasMethod(a))b=function(){return d[a].apply(d,arguments)},
+Joose.top[a]||(Joose.top[a]=b),Joose[a]||(Joose[a]=b),Joose.is_NodeJS&&!global[a]&&(global[a]=b);else{var e={};e[a]=c||this.getDefaultHelperFor(b);this.meta.extend({methods:e});this.register(a)}},Module:function(a,b){return this.prepareProperties(a,b,Joose.Namespace.Keeper,function(a,b,e){typeof e=="function"&&(e={body:e});return this.create(a,b,e)})}}})).c;Joose.Namespace.Manager.my=new Joose.Namespace.Manager;Joose.Namespace.Manager.my.register("Class",Joose.Meta.Class);
+Joose.Namespace.Manager.my.register("Role",Joose.Meta.Role);Joose.Namespace.Manager.my.register("Module");
