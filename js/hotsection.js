@@ -3,15 +3,15 @@ jQuery(function($){
 Module('nz.geek.fox',function(m){
 
   Joose.Managed.Attribute.meta.extend({
-        does : [ JooseX.Attribute.Lazy ],
+        does : [ JooseX.Attribute.Lazy ]
   });
 
 Class("ContentBox", {
   has: {
     parentNode: { isa: 'Str', is: 'ro', required: 1 },
-    container : { isa: 'Obj', is: 'rw', predicate: 'hasContainer', lazy: '_buildContainer', },
-    content   : { isa: 'Obj', is: 'rw', predicate: 'hasContent', lazy: '_buildContent', },
-    populate  : { is: 'rw', required: 1 },
+    container : { isa: 'Obj', is: 'rw', predicate: 'hasContainer', lazy: '_buildContainer'},
+    content   : { isa: 'Obj', is: 'rw', predicate: 'hasContent', lazy: '_buildContent' },
+    populate  : { is: 'rw', required: 1 }
   },
   methods: {
     _buildContainer: function(){
@@ -41,7 +41,7 @@ Class("ContentBox", {
       this.getContainer().load( link, function(){
         callback(this);    
       });
-    },
+    }
   }
 });
 
@@ -51,7 +51,7 @@ Class("HotSection", {
       title: { isa: 'Str', is: 'ro', required: 1},
       link: { isa: 'Str', is: 'ro', required: 1},
       node: { isa: 'Obj', is: 'ro', required: 1},
-      content: { isa: 'Obj', is: 'rw' , lazy: '_buildContent' },
+      content: { isa: 'Obj', is: 'rw' , lazy: '_buildContent' }
     },
     after: {
       initialize: function (props) {
@@ -78,7 +78,7 @@ Class("HotSection", {
           populate: function( obj ){ 
             obj.load( hs.getLink() );
             return "<span>Loading</span>";
-          },
+          }
         });
       },
       fullmode: function(){ 
@@ -90,7 +90,7 @@ Class("HotSection", {
         $( this.node ).children().not('div.content').slideDown("fast");
         this.getContent().hide();
         // history.pushState( { path: '/' } , 'Kent Fredric\'s Projects on Github', '/' );
-      },
+      }
     }
 });
 
@@ -100,7 +100,7 @@ $('div.crossref').each(function(i,o){
     o.HotSection = new nz.geek.fox.HotSection({
       title: $(o).find("div.name").text(),
       link: $(o).find("div.link a:eq(0)").attr('href'),
-      node: o,
+      node: o
     });
 });
 
