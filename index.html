@@ -7,7 +7,7 @@ xyears:
   - y: 2011
     m: []    
   - y: 2010
-    m: []
+    m: [ "01" ]
   - y: 2009
     m: [ 12 ]
 ---
@@ -19,9 +19,11 @@ xyears:
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>Kent Fredric's Projects on GitHub</title>
     <link rel="stylesheet" type="text/css" href="style.css" />
+    {% comment %}
     <script type="text/javascript" src="/js/lib/jquery.min.js" defer="defer"></script>
     <script type="text/javascript" src="/js/lib/joose.mini.js" defer="defer"></script>
     <script type="text/javascript" src="/js/lib/JooseX.Attribute.Lazy.min.js" defer="defer"></script>
+    {% endcomment %}
     <link rel="shortcut icon" href="/favicon.ico" />
   </head>
   <body>
@@ -47,6 +49,7 @@ xyears:
     </ul>
     {%endfor %}
     {%endfor %}
+    {%comment%}
     <div> Todo </div>
     <h2><span class="noun">Perl</span> Modules</h2>
     <div>
@@ -59,6 +62,9 @@ xyears:
         </div>
       </div>
     </div>
+    {%endcomment%}
+    {% comment %}
     <script type="text/javascript" src="/js/hotsection.min.js" defer="defer"></script>
+    {% endcomment %}
   </body>
 </html>
