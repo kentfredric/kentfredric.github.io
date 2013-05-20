@@ -1,3 +1,17 @@
+---
+xyears: 
+  - y: 2013 
+    m: []
+  - y: 2012
+    m: []
+  - y: 2011
+    m: []    
+  - y: 2010
+    m: []
+  - y: 2009
+    m: [ 12 ]
+---
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -13,6 +27,26 @@
   <body>
     <h1>Work In Progress</h1>
     <h2>Blog</h2>
+    {% for xyear in page.xyears %}
+    <h3>{{ xyear.y }}</h3>
+    {% for xmonth in xyear.m %}
+    <h4>{{ xyear.y }} - {{ xmonth }}</h4>
+    <ul>
+      {% for post in site.posts %}
+      {% capture pyear %}{{ post.date | date: "%Y" }}{% endcapture %}
+      {% capture yyear %}{{ xyear.y }}{% endcapture %}
+      {% capture pmonth %}{{ post.date | date: "%m" }}{% endcapture %}
+      {% capture ymonth %}{{ xmonth }}{% endcapture %}
+
+      {% if yyear == pyear and ymonth == pmonth %}
+        <li>
+        <a href="{{ post.url }}">{{ post.date | date: "%Y-%m-%d" }} - {{ post.title }}</a>
+        </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+    {%endfor %}
+    {%endfor %}
     <div> Todo </div>
     <h2><span class="noun">Perl</span> Modules</h2>
     <div>

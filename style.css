@@ -14,7 +14,9 @@ tt, code, kbd, samp {
   font-family: "Bitstream Vera Sans Mono", monospace;
   font-size: 80%;
 }
-
+p { 
+  text-align: justify;
+}
 div.title div.name {
   font-size: 2em;
 }
@@ -66,6 +68,47 @@ body {
   box-shadow: 0 0 40px 5px rgba(176,203,255,0.9);
 
 }
+div.highlight > pre { 
+  margin: 0px;
+  padding: 0px;
+}
+div.highlight {
+  margin: 3px;
+  padding: 3px;
+  background-color: #EEE;
+  border-radius: 3px;
+  border: 1px solid;
+  box-shadow: 0 0 2px 0.5px rgba(176,203,255,0.9);
 
-
-
+}
+div.highlight span.lineno {
+  color: #555555;
+}
+div.highlight span.nb {
+  color: #1111ff;
+  font-weight: bold;
+}
+div.highlight span.k{
+  color: #115500;
+  font-weight: bold;
+}
+div.highlight span.nv{
+  color: #551100;
+  font-weight: bold;
+}
+div.highlight span.c1{
+  color: #555555;
+  font-weight: bold;
+}
+div.highlight span.s{
+  color: #ff5555;
+  font-weight: normal;
+}
+div.highlight span.n{
+  color: #111155;
+  font-weight: bold;
+}
+div.highlight span.mi{
+  color: #4444ff;
+  font-weight: normal;
+}
