@@ -1,0 +1,152 @@
+---
+layout: article
+title: Any good advice on focusing on the one scope in this massively metarecursive language?
+tags: discipline, perl, workflow
+---
+<p>The recursivity of the meta-programming these days in Perl is astounding.</p>
+
+<p>This is <strong>not</strong> necessarily a <em>bad</em> thing, but it has its drawbacks in various fields</p>
+
+<p>While I <em>love</em> authoring modules, and I <em>love</em> contributing to various projects, 
+  I often find this is a need, when I would rather be focusing on something that <em>I</em> need.</p>
+
+<h3 id="AnExample"><a href="#AnExample">An Example</a></h3>
+
+<p>
+  Let me give you and example: one of my family members requested them work on a
+  website for them, for one of their businesses, and I as a result want to
+  produce the best product I possibly can for this.
+</p>
+<p>
+  The first concern I encountered was shipping it. I need to be able to
+  develop this website in a way that I can ship it somewhere ( target unknown )
+  and have a relatively quick, relatively hassle-free installation that Just
+  Works, so in the event I have to hand the code over to somebody else to work
+  with, or ship it to a different server where I may have less control over
+  the environment or distribution it runs, it will still mostly just work
+</p>
+<p>This lead me to my 
+
+<a href="http://blog.fox.geek.nz/2010/06/search-for-perfect-project-setup.html" title="Search for the perfect project setup">state-of-packaging post</a>, 
+where
+I started wasting various time trying to work out what best way to
+bundle/package and otherwise get the software to just work.
+</p>
+<p>
+This need sort-of emerged out of the want to use the latest and greatest
+tools, such as Plack, the latest editions of Moose, etc. 
+</p>
+
+<p>However, as discovered  <a href="http://blog.fox.geek.nz/2010/06/search-for-perfect-project-setup.html" title="Search for the perfect project setup">in the aforementioned article</a>,
+the state of linux distributions with regard to Perl in the larger scale
+largely sucks, and pretty much the "best" option tends to result in "using
+<a href="http://www.perl.org/cpan.html" title="CPAN - Comprehensive Perl Archive Network">CPAN</a>".</p>
+
+<p> <a href="http://www.perl.org/cpan.html" title="CPAN - Comprehensive Perl
+Archive Network">CPAN</a> is great and all, don't get me wrong, but compared to
+existing linux distribution package management techniques, Perl dependency and
+file management leaves much to be desired. Sure, its miles ahead of Ruby and
+Python, (&nbsp;not to mention evolutions of species better than PHP, Java and
+C/C++'s native package management&nbsp;) but since when do we use the <em>lesser
+tools</em> as our measure of standard?</p>
+
+<p>So anyhow, after musing for several days on this dilemma, researching
+various options, talking to various people, and blogging about it, 
+and not getting very far, I decide I'm just wasting my time
+again and I should just hack something up on my box, and worry about this
+package management crap later</p>
+
+<h3 id="Distraction2Point0"><a href="#Distraction2Point0">Distraction
+2.0</a></h3>
+<p>
+So, I decide to get it working on my machine first, worry about everywhere
+else later, you know, when it matters. This is of course a potentially
+dangerous decision from a reliability standpoint, because you may discover
+whatever technique you decided to use on your system is completely non-viable on
+another.
+</p>
+<p>On my machine, the first thing I do is go through my toolkit and update all
+the various packages I'll need using my Distributions Package Management
+tools. (&nbsp;This surprisingly in my experience sucks less than it does than on
+the other distributions I've tried&nbsp;).</p>
+<p>Then I discover a discrepancy in how another developer has mapped Perl
+dependencies to Package Manager dependencies, that is different to how I've been doing
+them, and I then have to work out if its merely an error, or its intent. ( The
+specifics of this I won't bore you with here ). As part of diagnosis, while
+I'm waiting for a response on IRC from the developer who wrote that mapping, I
+of course write a Perl script to work out where else this style of mapping is
+being used in attempt to gauge how often it is used. </p>
+
+<p>This eventually diverges until I'm parsing individual build scripts with
+Perl and am trying to extract balanced bracket sets from these files with
+context. (&nbsp;Bad me, I should have just used <a href="http://search.cpan.org/dist/Text-Balanced/" title="Text::Balanced on Search.CPAN.org">Text::Balanced</a>&nbsp;)
+</p>
+<p>Fortunately, I disregarded that script eventually, because I realised how
+much of the day I'd wasted on this problem already. Argh. Still no closer to
+even starting the actual code :|</p>
+
+<p>Other times, when doing the update phase, I discover a package
+incompatibility with Perl, for whatever reason. A recent example is some
+bizarre failure with <a href="http://search.cpan.org/dist/Eval-Context/" title="Eval::Context on Search.CPAN.org">Eval::Context</a>. This failure is
+  being a bit hard to trace down, because the failure occurs, as far as I can
+  make out, in <a href="http://search.cpan.org/dist/perl/lib/Carp.pm" title="Carp on Search.CPAN.org">Carp</a>. The usual techniques such as
+    <code>-M<a href="http://search.cpan.org/dist/Carp-Always/" title="Carp::Always on Search.CPAN.org">Carp::Always</a></code> or 
+    <code>-M<a href="http://search.cpan.org/dist/Devel-SimpleTrace/" title="Devel::SimpleTrace on Search.CPAN.org">Devel::SimpleTrace</a></code> do not
+    want to work, as for some reason, their presence cause the wonderful
+    Heisenbug scenario, the bug vanishes! (&nbsp;well, and a new one appears in its
+        place&nbsp;). And to make matters worse (&nbsp;much much worse&nbsp;), when I
+    run the build + test by hand instead of under the packager sandbox
+    installation system, the bug also vanishes. Pesky indeed. (&nbsp;I haven't
+        filed a bug for the above yet, in case you're asking, there's simply
+        no point filing one until I can reliably recreate the scenario in a
+        sterile way. And as a general rule I've found with Perl, most of the
+        time, If I figure out what the problem is, I figure out a solution
+        at the same time&nbsp;)
+</p>
+<p>Lets assume for a moment I was able to actually work out what was going on,
+  after dicking around for a few hours, I'd probably have found a patch that
+  worked too, and possibly submitted a bug-request and patch to upstream, and
+  then applied the workaround to the Perl overlay, I'd be able to get on my
+  way to the <em>next</em> package.</p>
+<p>Granted, at the moment, the number of failing packages I'm encountering is
+much much higher as I'm helping test the Perl 5.12.1 release precluding the
+integration into the main tree, and I'm voluntarily fixing these things
+because somebody has to test this stuff before it hits <sub>L</sub>user
+land</p>
+<h3 id="MoreRecursion"><a href="#MoreRecursion">More Recursion</a></h3>
+<p>
+Its not the case this time, I mean, <em>yet</em> with this project
+(&nbsp;mostly because its yet to have any code!&nbsp;), but I often find
+myself swimming deeper and deeper into the metaprogrammy sea. </p><p>In the
+beginning, it was just writing modules that made my life easier.</p><p>Then
+comes the fun of distribution of those modules to make others life
+easier</p><p>Then comes the want to make distribution of Modules
+easier</p><p>Then comes the awesome madness that is <a href="http://search.cpan.org/dist/Dist-Zilla/" title="Dist::Zilla on Search.CPAN.org">Dist::Zilla</a>
+</p>
+<p>Then comes you writing plugins for <a href="http://search.cpan.org/dist/Dist-Zilla" title="The Awesomeest Distribution Packaging Tool">
+Dist::Zilla</a></p>
+<p>Then you're writing plugin bundles for the above</p>
+<p>Then you're working on Dist::Zilla itself(&nbsp;Patches&nbsp;!&nbsp;:D&nbsp;)</p>
+<p>Then you're contributing code to other peoples Dist::Zilla plugins</p>
+<p>Then you're contributing code to fix various packages that other peoples
+Dist::Zilla's plugins use.</p>
+<p>All this is great stuff, really, community++, but something in the back of
+my mind says "Hey, you're lost in the meta, you're so far removed from what
+you were actually trying to achieve you can no longer see the woods for the
+trees, in fact, you can't even see trees, all you're seeing is carbon
+atoms and you're trying to compute the spin on their electrons!"</p>
+<h3 id="MyProblemReally"><a href="#MyProblemReally">My Problem Really</a></h3>
+<p>I think my problem is really I don't see a viable way of staying strictly a
+"high-level abstraction" consumer, and just using the abstractions that exist
+to achieve my goal, and I'm always drilling down into the guts of things,
+   patching their core, getting all low-level into the implementation of
+   things and forgetting my original goal for weeks. </p><p>The best I can
+   come up with is "hey, perhaps you'll have to be anti-contributive a bit, an
+   er, yuck, but write code that is probably redundant somewhere in a way
+   that's not really optimally reusable, because the long-term maintenance
+   requirements of publican shared code are a bit high"?
+   </p>
+   <p>I think I just sicked up in my mouth at the idea of that :/</p>
+   <p>But I have to find some way to focus on the project level, food doesn't
+   put itself on the table!</p>
+   </div>
