@@ -17,7 +17,7 @@ So I will attempt to dissect it as objectively as possible, so that we can fix w
 
 ## The Facts: Things which may be actual problems.
 
-### CGI Sucks and Nobody Should use it.
+### CGI Sucks and it's documented that Nobody Should use it.
 
 Netanel did not identify this quirk as such, but it underlies a significant chunk of his presentation.
 
