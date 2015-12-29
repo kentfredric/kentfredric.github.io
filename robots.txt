@@ -1,0 +1,5 @@
+Sitemap: http://kentfredric.github.io/sitemap.xml
+User-Agent: *
+Disallow:
+
+

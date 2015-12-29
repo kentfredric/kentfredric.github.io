@@ -1,56 +1,16 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <link href="/theme/css/normalize.css" rel="stylesheet">
-        <link href="/theme/css/skeleton.css" rel="stylesheet">
-        <link href="/theme/css/statocles-default.css" rel="stylesheet">
-        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+<?xml version="1.0"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
         <title>My Statocles Site</title>
-        <meta content="Statocles 0.061" name="generator">
-        <link href="/blog/index.atom" rel="alternate" type="application/atom+xml">
-        <link href="/blog/index.rss" rel="alternate" type="application/rss+xml">
-        
-    </head>
-    <body>
-        <header>
-            <nav class="navbar">
-                <div class="container">
-                    <a class="brand" href="/">My Statocles Site</a>
-                    <ul>
-                        <li>
-                            <a href="/">Blog</a>
-                        </li>
-                    </ul>
-                    
-                </div>
-            </nav>
-            
-        </header>
-        <div class="main container">
-            
-<div class="row">
-
-    <div class="nine columns">
-        <main>
-
-
-            <article>
-                <header>
-                    <h1><a href="/blog/2015/12/29/the-perl-jam-2-lessons-and-mistakes/">The Perl Jam 2: Lessons and Mistakes</a></h1>
-
-                    <p class="tags">Tags:
-                        <a href="/blog/tag/perl/" rel="tag">perl</a>
-                    </p>
-
-                    <aside>
-                        <p><time datetime="2015-12-29">
-                            Posted on 2015-12-29
-                        </time>
-                        </p>
-                    </aside>
-
-                </header>
-
+        <link>http://kentfredric.github.io/blog/tag/perl/</link>
+        <atom:link href="http://kentfredric.github.io/blog/tag/perl.rss" rel="self" type="application/rss+xml" />
+        <description>Blog feed of My Statocles Site</description>
+        <generator>Statocles 0.061</generator>
+        <item>
+            <title>The Perl Jam 2: Lessons and Mistakes</title>
+            <link>http://kentfredric.github.io/blog/2015/12/29/the-perl-jam-2-lessons-and-mistakes/</link>
+            <guid>http://kentfredric.github.io/blog/2015/12/29/the-perl-jam-2-lessons-and-mistakes/</guid>
+            <description><![CDATA[
                 <p>Its hard to be part of the Perl Community and see Netanel Rubin parading on stage and see him smack-talking Perl.</p>
 
 <p>Objective Technical criticism should of course be welcomed, but I felt his presentation missed that mark.</p>
@@ -203,84 +163,15 @@ print { $handle } &quot;Hi there&quot;; # Can&#39;t use string (&quot;WAT&quot;)
 
 <p>So on the Web using CGI, <code>strict</code> not doing its job escalates the problem to a security hole.</p>
 
+                    <p><a href="http://kentfredric.github.io/blog/2015/12/29/the-perl-jam-2-lessons-and-mistakes/#section-2">Continue reading...</a></p>
+                <p>Tags:
+                    <a href="http://kentfredric.github.io/blog/tag/perl/">perl</a>
+                </p>
+            ]]></description>
+            <pubDate>
+                Tue, 29 Dec 2015 00:00:00 +0000
+            </pubDate>
+        </item>
+    </channel>
+</rss>
 
-
-            </article>
-            <article>
-                <header>
-                    <h1><a href="/blog/2015/12/29/first-post/">First Post</a></h1>
-
-                    <p class="tags">Tags:
-                    </p>
-
-                    <aside>
-                        <p><time datetime="2015-12-29">
-                            Posted on 2015-12-29
-                        </time>
-                        </p>
-                    </aside>
-
-                </header>
-
-                <h1>Welcome To Your Blog</h1>
-
-<p>This is your first post. To edit this post, open up /blog/2015/12/29/first-post/index.markdown
-in your text editor.</p>
-
-<p><a href="http://preaction.me/statocles/pod/Statocles/Help/Content.html">Check the documentation for how to write Statocles
-content</a></p>
-
-
-
-            </article>
-        </main>
-
-        <ul class="pager">
-            <li class="prev">
-                <a class="button disabled" href="" rel="next">
-                    ← Older
-                </a>
-            </li>
-            <li class="next">
-                <a class="button disabled" href="" rel="prev">
-                    Newer →
-                </a>
-            </li>
-        </ul>
-
-    </div>
-
-    <div class="three columns sidebar">
-        
-        <h1>Tags</h1>
-        <ul class="list-inline">
-            <li><a href="/blog/tag/perl/">perl</a></li>
-        </ul>
-        <h1>Feeds</h1>
-        <ul class="list-inline">
-            <li>
-                <a href="/blog/index.atom" rel="alternate" type="application/atom+xml">
-                    Atom
-                </a>
-            </li>
-            <li>
-                <a href="/blog/index.rss" rel="alternate" type="application/rss+xml">
-                    RSS
-                </a>
-            </li>
-        </ul>
-    </div>
-
-</div>
-
-
-        </div>
-        <footer>
-            
-            <div class="container tagline">
-                <a href="http://preaction.me/statocles">Made with Statocles</a><br>
-                <a href="http://www.perl.org">Powered by Perl</a>
-            </div>
-        </footer>
-    </body>
-</html>
