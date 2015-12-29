@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>http://kentfredric.github.io/blog/tag/perl/</id>
     <title>My Statocles Site</title>
-    <updated>2015-12-30T01:21:15Z</updated>
+    <updated>2015-12-30T02:02:20Z</updated>
     <link href="http://kentfredric.github.io/blog/tag/perl.atom" rel="self" />
     <link href="http://kentfredric.github.io/blog/tag/perl/" rel="alternate" />
     <generator version="0.061">Statocles</generator>
@@ -26,7 +26,7 @@ with Perl is unlikely to be able to differentiate between actual criticisms and 
 
 <h2>The Facts: Things which may be actual problems.</h2>
 
-<h3>CGI Sucks and Nobody Should use it.</h3>
+<h3>CGI Sucks and it&#39;s documented that Nobody Should use it.</h3>
 
 <p>Netanel did not identify this quirk as such, but it underlies a significant chunk of his presentation.</p>
 
