@@ -197,6 +197,52 @@ print { $handle } &quot;Hi there&quot;; # Can&#39;t use string (&quot;WAT&quot;)
 
 <p>So on the Web using CGI, <code>strict</code> not doing its job escalates the problem to a security hole.</p>
 
+<h4>How do we fix it?</h4>
+
+<ol>
+<li><p><code>use strict</code> really aught to imply <code>strict</code> here, and <code>&lt;&quot;ANYTHING&quot;&gt;</code> should subsequently be a strictures error. Adding that change however risks
+breaking existing code with real world usecases, so a painful deprecation cycle might be necessary somehow.</p></li>
+<li><p>A deeper question is wether or not the ARGV iterator is something that should be deemed &quot;Sane&quot; in 2015. I&#39;ve clearly demonstrate it <em>can</em> be useful,
+but its also easy to demonstrate how it <em>can</em> pose a security risk in the event anyone is foolish enough to use <code>&lt;&gt;</code> or <code>&lt;ARGV&gt;</code> without fully realising
+the consequences. And this can be hard to even realise is a problem in a code security review.</p>
+
+<p>Were it me, given the lethality of those features, I would be wanting to deprecate both of those outside <code>perl -e</code>, which I believe is its primary usecase
+anyway, because it eliminates the need for multiple layers of quoting and lots of painful explicit calls to <code>open()</code>, which would grossly burden somebody
+who is simply trying to string together a short oneliner.</p>
+
+<pre><code>perl -e &#39;while(&lt;&gt;) { print $_ }&#39; &#39;file_a.txt&#39; &#39;gzcat file_b.txt|&#39; &#39;-&#39;
+</code></pre>
+
+<p>This code without the magic of <code>&lt;&gt;</code> and <code>ARGV</code> gives you a significant amount of code to write.
+So much in fact, that simply thinking about what it would take made me give up even tempting to write one as an example in Perl, so instead,
+an equivalent in bash will have to suffice:</p>
+
+<pre><code>cat file_a.txt &lt;( gzcat file_b.txt ) /dev/stdin
+</code></pre>
+
+<p>Maybe we can develop a pragma that regulates what 2-arg <code>open</code> ( and its effective internals in ARGV ) are permitted to do?
+ie:</p>
+
+<pre><code>use Safe::Open2; # 2-arg-open assumes *all* arguments are filenames
+use Safe::Open2 qw/stdio/; # as with ^, but allows - based STDIO access
+use Safe::Open2 qw/exec stdio/; # allows pipe-exec and stdio
+</code></pre>
+
+<p>I don&#39;t honestly know, and its messy, becuase you can&#39;t really afford to turn it on/off on a per-module basis, because the security
+risk has global implications regardless of where you write it, as its fundementally dealing with the gateway perl uses to interact with the rest
+of the operating system.</p>
+
+<p>So something with only lexical effect would be still born, but something with global effect could cause spooky action at a distance,
+because <code>ARGV</code> is implicitly global in nature, and unresolvably so.</p>
+
+<p>But either way</p>
+
+<ul>
+<li>It makes sense to have this feature when you <strong>know</strong> you&#39;re working in a command line directly in a secure environement</li>
+<li>It makes much less sense to a have this feature when you&#39;re not intending to work with the command line, or you&#39;re dealing with mixed environment security</li>
+</ul></li>
+</ol>
+
             </section>
         </main>
 
