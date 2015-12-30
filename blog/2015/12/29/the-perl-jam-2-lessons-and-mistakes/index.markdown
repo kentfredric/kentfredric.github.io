@@ -140,3 +140,43 @@ It allows you do to neat things like
 But this feature makes **NO** sense when you're on the internet using CGI, and the person passing your command line arguments is some person with an HTTP Client.
 
 So on the Web using CGI, `strict` not doing its job escalates the problem to a security hole.
+
+#### How do we fix it?
+
+1. `use strict` really aught to imply `strict` here, and `<"ANYTHING">` should subsequently be a strictures error. Adding that change however risks
+    breaking existing code with real world usecases, so a painful deprecation cycle might be necessary somehow.
+
+2. A deeper question is wether or not the ARGV iterator is something that should be deemed "Sane" in 2015. I've clearly demonstrate it *can* be useful,
+  but its also easy to demonstrate how it *can* pose a security risk in the event anyone is foolish enough to use `<>` or `<ARGV>` without fully realising
+  the consequences. And this can be hard to even realise is a problem in a code security review.
+
+  Were it me, given the lethality of those features, I would be wanting to deprecate both of those outside `perl -e`, which I believe is its primary usecase
+  anyway, because it eliminates the need for multiple layers of quoting and lots of painful explicit calls to `open()`, which would grossly burden somebody
+  who is simply trying to string together a short oneliner.
+
+        perl -e 'while(<>) { print $_ }' 'file_a.txt' 'gzcat file_b.txt|' '-'
+
+  This code without the magic of `<>` and `ARGV` gives you a significant amount of code to write.
+  So much in fact, that simply thinking about what it would take made me give up even tempting to write one as an example in Perl, so instead,
+  an equivalent in bash will have to suffice:
+
+        cat file_a.txt <( gzcat file_b.txt ) /dev/stdin
+
+  Maybe we can develop a pragma that regulates what 2-arg `open` ( and its effective internals in ARGV ) are permitted to do?
+  ie:
+
+        use Safe::Open2; # 2-arg-open assumes *all* arguments are filenames
+        use Safe::Open2 qw/stdio/; # as with ^, but allows - based STDIO access
+        use Safe::Open2 qw/exec stdio/; # allows pipe-exec and stdio
+
+  I don't honestly know, and its messy, becuase you can't really afford to turn it on/off on a per-module basis, because the security
+  risk has global implications regardless of where you write it, as its fundementally dealing with the gateway perl uses to interact with the rest
+  of the operating system.
+
+  So something with only lexical effect would be still born, but something with global effect could cause spooky action at a distance,
+  because `ARGV` is implicitly global in nature, and unresolvably so.
+
+  But either way
+
+  - It makes sense to have this feature when you **know** you're working in a command line directly in a secure environement
+  - It makes much less sense to a have this feature when you're not intending to work with the command line, or you're dealing with mixed environment security
