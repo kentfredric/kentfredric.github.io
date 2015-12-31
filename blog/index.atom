@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>http://kentfredric.github.io/blog/</id>
     <title>KENTNL&#39;s Blog</title>
-    <updated>2015-12-31T19:41:12Z</updated>
+    <updated>2015-12-31T19:45:31Z</updated>
     <link href="http://kentfredric.github.io/blog/index.atom" rel="self" />
     <link href="http://kentfredric.github.io/blog/" rel="alternate" />
     <generator version="0.061">Statocles</generator>
@@ -216,25 +216,6 @@ because <code>ARGV</code> is implicitly global in nature, and unresolvably so.</
         ]]></content>
         <updated>2015-12-29T00:00:00Z</updated>
         <category term="perl" />
-    </entry>
-    <entry>
-        <id>http://kentfredric.github.io/blog/2015/12/29/first-post/</id>
-        <title>First Post</title>
-        <link href="http://kentfredric.github.io/blog/2015/12/29/first-post/" rel="alternate" />
-        <content type="html"><![CDATA[
-            <h1>Welcome To Your Blog</h1>
-
-<p>This is your first post. To edit this post, open up /blog/2015/12/29/first-post/index.markdown
-in your text editor.</p>
-
-<p><a href="http://preaction.me/statocles/pod/Statocles/Help/Content.html">Check the documentation for how to write Statocles
-content</a></p>
-
-                <p><a href="http://kentfredric.github.io/blog/2015/12/29/first-post/#section-2">Continue reading...</a></p>
-            <p>Tags:
-            </p>
-        ]]></content>
-        <updated>2015-12-29T00:00:00Z</updated>
     </entry>
 </feed>
 

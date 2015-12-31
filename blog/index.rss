@@ -218,27 +218,6 @@ because <code>ARGV</code> is implicitly global in nature, and unresolvably so.</
                 Tue, 29 Dec 2015 00:00:00 +0000
             </pubDate>
         </item>
-        <item>
-            <title>First Post</title>
-            <link>http://kentfredric.github.io/blog/2015/12/29/first-post/</link>
-            <guid>http://kentfredric.github.io/blog/2015/12/29/first-post/</guid>
-            <description><![CDATA[
-                <h1>Welcome To Your Blog</h1>
-
-<p>This is your first post. To edit this post, open up /blog/2015/12/29/first-post/index.markdown
-in your text editor.</p>
-
-<p><a href="http://preaction.me/statocles/pod/Statocles/Help/Content.html">Check the documentation for how to write Statocles
-content</a></p>
-
-                    <p><a href="http://kentfredric.github.io/blog/2015/12/29/first-post/#section-2">Continue reading...</a></p>
-                <p>Tags:
-                </p>
-            ]]></description>
-            <pubDate>
-                Tue, 29 Dec 2015 00:00:00 +0000
-            </pubDate>
-        </item>
     </channel>
 </rss>
 
