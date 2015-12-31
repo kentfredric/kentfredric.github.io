@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>http://kentfredric.github.io/blog/tag/perl/</id>
-    <title>My Statocles Site</title>
-    <updated>2015-12-31T00:52:48Z</updated>
+    <title>KENTNL&#39;s Blog</title>
+    <updated>2015-12-31T19:41:13Z</updated>
     <link href="http://kentfredric.github.io/blog/tag/perl.atom" rel="self" />
     <link href="http://kentfredric.github.io/blog/tag/perl/" rel="alternate" />
     <generator version="0.061">Statocles</generator>
