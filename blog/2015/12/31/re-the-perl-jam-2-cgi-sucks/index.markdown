@@ -1,10 +1,11 @@
 ---
 tags:
   - 'perl'
+  - 'the perl jam 2'
 title: 'Re: The Perl Jam 2: CGI Sucks'
 ---
 
-I'm going to be posting a series of entries in response to [Netanel Rubin's Presentation: The Perl Jam 2](https://www.youtube.com/watch?v=eH_u3C2WwQ0), and this is the first of such entries.
+I'm going to be posting a [series](/blog/tag/the-perl-jam-2) of entries in response to [Netanel Rubin's Presentation: The Perl Jam 2](https://www.youtube.com/watch?v=eH_u3C2WwQ0), and this is the first of such entries.
 
 As a whole, I felt he grossly miss-characterised Perl and its community, and made a few glaring errors in his presentation and a few leaps of logic.
 
