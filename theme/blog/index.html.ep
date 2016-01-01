@@ -1,7 +1,7 @@
 
 <div class="row">
 
-    <div class="nine columns">
+    <div class="col-md-9">
         <main>
 
             % if ( my $tag_text = $self->data->{ tag_text } ) {
@@ -47,7 +47,7 @@
                 <%= $sections[0] %>
 
                 % if ( @sections > 1 ) {
-                    <p><a href="<%= $app->page_url( $page ) %>#section-2">Continue reading <%= $page->title %>...</a></p>
+                    <p><a href="<%= $page->path %>#section-2">Continue reading <%= $page->title %>...</a></p>
                 % }
 
             </article>
@@ -55,25 +55,27 @@
         </main>
 
         <ul class="pager">
-            <li class="prev">
-                <a class="button <%= $self->next ? 'button-primary' : 'disabled' %>"
-                    rel="next" href="<%= $self->next // '' %>"
-                >
-                    &larr; Older
-                </a>
+            <li class="previous <%= !$self->next ? 'disabled' : '' %>">
+                % if ( $self->next ) {
+                <a rel="next" href="<%= $self->next %>">&larr; Older</a>
+                % }
+                % else {
+                <span>&larr; Older</span>
+                % }
             </li>
-            <li class="next">
-                <a class="button <%= $self->prev ? 'button-primary' : 'disabled' %>"
-                    rel="prev" href="<%= $self->prev // '' %>"
-                >
-                    Newer &rarr;
-                </a>
+            <li class="next <%= !$self->prev ? 'disabled' : '' %>">
+                % if ( $self->prev ) {
+                <a rel="prev" href="<%= $self->prev %>">Newer &rarr;</a>
+                % }
+                % else {
+                <span>Newer &rarr;</span>
+                % }
             </li>
         </ul>
 
     </div>
 
-    <div class="three columns sidebar">
+    <div class="sidebar col-md-3">
         %= include 'site/sidebar_before.html.ep'
         <h1>Tags</h1>
         <ul class="list-inline">
