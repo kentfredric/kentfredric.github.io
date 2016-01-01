@@ -202,3 +202,6 @@ Please direct any feedback or corrections [to the Reddit thread](https://www.red
 
   - irc.perl.org u:kentnl
   - irc.freenode.org u:kent\n
+
+Or if you want, you can [patch the blog yourself](https://github.com/kentfredric/kentfredric.github.io/pulls)
+or [file a bug on it](https://github.com/kentfredric/kentfredric.github.io/issues)
