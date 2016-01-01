@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+        <link href="/theme/css/statocles-bootstrap.css" rel="stylesheet">
+        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+        <title>Re: The Perl Jam 2: CGI Sucks - KENTNL's Blog</title>
+        <meta content="Statocles 0.061" name="generator">
+        
+    </head>
+    <body>
+        <header>
+            <nav class="navbar navbar-default navbar-static-top" role="navigation">
+                <div class="container">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="navbar-header">
+                        <button class="navbar-toggle" data-target="#top-navbar-collapse-1" data-toggle="collapse" type="button">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="/">KENTNL&#39;s Blog</a>
+                    </div>
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+                    <div class="collapse navbar-collapse" id="top-navbar-collapse-1">
+                        <ul class="nav navbar-nav">
+                            <li><a href="/">Blog</a></li>
+                        </ul>
+                        
+                    </div>
+                </div>
+            </nav>
+            
+        </header>
+        <div class="main container">
+            <div class="row">
+
+    <div class="col-md-9">
+        <main>
+            <header>
+                <h1>Re: The Perl Jam 2: CGI Sucks</h1>
+                <p class="tags">Tags:
+                    <a href="/blog/tag/perl/" rel="tag">perl</a>
+                    <a href="/blog/tag/the-perl-jam-2/" rel="tag">the perl jam 2</a>
+                </p>
+
+                <aside>
+                    <p><time datetime="2015-12-31">
+                        Posted on 2015-12-31
+                    </time>
+                    </p>
+                </aside>
+
+
+            </header>
+            <section id="section-1">
+                <p>I&#39;m going to be posting a <a href="/blog/tag/the-perl-jam-2">series</a> of entries in response to <a href="https://www.youtube.com/watch?v=eH_u3C2WwQ0">Netanel Rubin&#39;s Presentation: The Perl Jam 2</a>, and this is the first of such entries.</p>
+
+<p>As a whole, I felt he grossly miss-characterised Perl and its community, and made a few glaring errors in his presentation and a few leaps of logic.</p>
+
+<p>Amongst his talk, he covered a handful of Real Bugs, but his presentation made it difficult to realise what they were objectively,
+and his hyperbolic and rhetoric technique served not to educate, not to correct, but to mock.</p>
+
+<p>I feel many of his criticisms would have been better addressed as actual bug reports, not a presentation conveying how software has bugs, and that with better clarity
+and less rhetorical devices, the important parts of his presentation could have been covered in 5 minutes.</p>
+
+<p>So this is an attempt at clarifying the mistakes in the presentation, and serve as a more objective response where we can unpack the relevant parts,
+fix the actual problems, and educate our way past the cultural issues that lead people to make bad choices.</p>
+
+<p>I will of course go into far more detail than is strictly necessary.</p>
+
+<h2>CGI Sucks</h2>
+
+<h3>And its Documented that Nobody should use it</h3>
+
+<p>Netanel did not identify this quirk as such, but it underlies a significant chunk of his presentation.</p>
+
+<p>Both <code>CGI.pm</code> and the CGI protocol imply serious limitations on the security and performance of your Web Application,
+and has been recommended against by everyone worth listening to, and is even documented as such
+<a href="https://metacpan.org/pod/release/LEEJO/CGI-4.25/lib/CGI.pod#CGI.pm-HAS-BEEN-REMOVED-FROM-THE-PERL-CORE"><strong>IN CGI.pm itself</strong></a></p>
+
+<blockquote>
+  <p>CGI.pm is no longer considered good practice for developing web applications, including quick prototyping and small web scripts.
+  There are far better, cleaner, quicker, easier, safer, more scalable, more extensible, more modern alternatives available at this point in time.</p>
+</blockquote>
+
+<p>The CGI protocol significantly blurs the lines between the Command Line interface, and the Web, in ways that prove to be detrimental,
+and can serve as an amplifier for bugs and security risks.</p>
+
+<p>One of the attacks he demonstrates relies heavily on a behaviour in Perl that is deemed useful for command line programs: The ability
+for the caller ( that is, the user of the command line program ), to specify, by way of arguments, names of arbitrary programs to execute to retrieve their output.</p>
+
+<p>This turns out to be a grave trap in a Web context, as HTTP <code>GET</code> Request parameters are passed to the CGI application as parameters to <code>@ARGV</code>,
+much like parameters on the command line.</p>
+
+<p>And that means any code that happens to utilize that &quot;execute arbitrary programs based on arguments in <code>@ARGV</code>&quot; path
+( either by intent, or by way of exploiting a bug ) is simply waiting for the day when some user on the internet can forge a request such as:</p>
+
+<pre><code>http://example.org/fake.cgi?rm -rf /|
+</code></pre>
+
+<p>And maybe find enough magic spice to trigger the &quot;be a command line and execute that&quot; condition.</p>
+
+<p>And this would clearly be bad.</p>
+
+<p>But this risk exists because of the Command-Line-as-a-Web-Protocol design flaw.</p>
+
+<h2>How do we fix it?</h2>
+
+<h3>Kill CGI</h3>
+
+<p>We&#39;ve been trying as a community to kill its use. But it still flourishes in many ways.</p>
+
+<p>Every time you talk to the community, there will be somebody who will tell you not to use it.</p>
+
+<p>Its documentation says not to use it.</p>
+
+<p>We removed it from Perl already to discourage its use.</p>
+
+<p>The only thing we can do here is be more vocal about how bad it is, and how nobody should use it.</p>
+
+<p>Its had its time, and that time is long past. You should expect it to bite you.</p>
+
+<p>But its not a good justification to say &quot;Perl is Bad&quot; because people refuse to stop using bad software written in it,
+despite the attempts of the community of that language trying to kill it.</p>
+
+<h3>Use PSGI Instead</h3>
+
+<p>People should be strongly encouraged to use any other standardized recognised Framework, especially ones that are implemented
+in terms of <a href="https://metacpan.org/pod/distribution/PSGI/PSGI.pod#SPECIFICATION">PSGI</a> and have the option of running
+on <a href="https://metacpan.org/pod/Plack">Plack</a> or any other <code>PSGI</code> compatible server.</p>
+
+<h3>PSGI Server in Core?</h3>
+
+<p>Perhaps we need to write a minimal subset of <code>Plack</code> and consider shipping it with Perl to encourage the use of <code>PSGI</code>.</p>
+
+<p>This option is naturally contentious, because <code>Perl</code> very much eschews the &quot;batteries included&quot; mentality, and there are serious
+consequences that occur when Perl includes too much software in itself, such as Linux vendors deeming those components not necessary
+and making them not part of the base Perl installation, invalidating the whole point of them being there in the first place,
+and adding the complications that come when users try to use things that their language documentation says should be there, but isn&#39;t.</p>
+
+<p>But given how long <code>CGI.pm</code> lived in core, and given how there&#39;s a substantial amount of its use due in part to that fact, we may
+need to consider incorporating competition to offset that problem.</p>
+
+            </section>
+        </main>
+
+
+    </div>
+
+    <div class="col-md-3">
+        
+        <nav id="tags">
+            <h1>Tags</h1>
+            <ul class="list-inline">
+                <li><a href="/blog/tag/perl/">perl</a></li>
+                <li><a href="/blog/tag/the-perl-jam-2/">the perl jam 2</a></li>
+            </ul>
+        </nav>
+    </div>
+
+</div>
+
+        </div>
+        <footer>
+            
+            <div class="container tagline">
+                <a href="http://preaction.me/statocles">Made with Statocles</a><br>
+                <a href="http://www.perl.org">Powered by Perl</a>
+            </div>
+        </footer>
+    </body>
+</html>

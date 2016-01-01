@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-    <id>http://kentfredric.github.io/blog/</id>
-    <title>KENTNL&#39;s Blog</title>
-    <updated>2016-01-01T17:14:53Z</updated>
-    <link href="http://kentfredric.github.io/blog/index.atom" rel="self" />
-    <link href="http://kentfredric.github.io/blog/" rel="alternate" />
-    <generator version="0.061">Statocles</generator>
-    <entry>
-        <id>http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/</id>
-        <title>Re: The Perl Jam 2: &lt;&quot;ARGV&quot;&gt; is evil</title>
-        <link href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/" rel="alternate" />
-        <content type="html"><![CDATA[
-            <p>This is part 2 in a <a href="http://kentfredric.github.io/blog/tag/the-perl-jam-2">series</a> of responses to
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>KENTNL&#39;s Blog</title>
+        <link>http://kentfredric.github.io/blog/tag/the-perl-jam-2/</link>
+        <atom:link href="http://kentfredric.github.io/blog/tag/the-perl-jam-2.rss" rel="self" type="application/rss+xml" />
+        <description>Blog feed of KENTNL&#39;s Blog</description>
+        <generator>Statocles 0.061</generator>
+        <item>
+            <title>Re: The Perl Jam 2: &lt;&quot;ARGV&quot;&gt; is evil</title>
+            <link>http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/</link>
+            <guid>http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/</guid>
+            <description><![CDATA[
+                <p>This is part 2 in a <a href="http://kentfredric.github.io/blog/tag/the-perl-jam-2">series</a> of responses to
 <a href="https://www.youtube.com/watch?v=eH_u3C2WwQ0">Netanel Rubin&#39;s Presentation: The Perl Jam 2</a>,
 for reasons explained in <a href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/">Part 1</a></p>
 
@@ -214,22 +214,22 @@ because <code>ARGV</code> is implicitly global in nature, and unresolvably so.</
 <li>It makes much less sense to a have this feature when you&#39;re not intending to work with the command line, or you&#39;re dealing with mixed environment security</li>
 </ul>
 
-                <p><a href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#section-2">Continue reading...</a></p>
-            <p>Tags:
-                <a href="http://kentfredric.github.io/blog/tag/perl/">perl</a>
-                <a href="http://kentfredric.github.io/blog/tag/the-perl-jam-2/">the perl jam 2</a>
-            </p>
-        ]]></content>
-        <updated>2016-01-01T00:00:00Z</updated>
-        <category term="perl" />
-        <category term="the perl jam 2" />
-    </entry>
-    <entry>
-        <id>http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/</id>
-        <title>Re: The Perl Jam 2: CGI Sucks</title>
-        <link href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/" rel="alternate" />
-        <content type="html"><![CDATA[
-            <p>I&#39;m going to be posting a <a href="http://kentfredric.github.io/blog/tag/the-perl-jam-2">series</a> of entries in response to <a href="https://www.youtube.com/watch?v=eH_u3C2WwQ0">Netanel Rubin&#39;s Presentation: The Perl Jam 2</a>, and this is the first of such entries.</p>
+                    <p><a href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#section-2">Continue reading...</a></p>
+                <p>Tags:
+                    <a href="http://kentfredric.github.io/blog/tag/perl/">perl</a>
+                    <a href="http://kentfredric.github.io/blog/tag/the-perl-jam-2/">the perl jam 2</a>
+                </p>
+            ]]></description>
+            <pubDate>
+                Fri, 01 Jan 2016 00:00:00 +0000
+            </pubDate>
+        </item>
+        <item>
+            <title>Re: The Perl Jam 2: CGI Sucks</title>
+            <link>http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/</link>
+            <guid>http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/</guid>
+            <description><![CDATA[
+                <p>I&#39;m going to be posting a <a href="http://kentfredric.github.io/blog/tag/the-perl-jam-2">series</a> of entries in response to <a href="https://www.youtube.com/watch?v=eH_u3C2WwQ0">Netanel Rubin&#39;s Presentation: The Perl Jam 2</a>, and this is the first of such entries.</p>
 
 <p>As a whole, I felt he grossly miss-characterised Perl and its community, and made a few glaring errors in his presentation and a few leaps of logic.</p>
 
@@ -317,15 +317,16 @@ and adding the complications that come when users try to use things that their l
 <p>But given how long <code>CGI.pm</code> lived in core, and given how there&#39;s a substantial amount of its use due in part to that fact, we may
 need to consider incorporating competition to offset that problem.</p>
 
-                <p><a href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#section-2">Continue reading...</a></p>
-            <p>Tags:
-                <a href="http://kentfredric.github.io/blog/tag/perl/">perl</a>
-                <a href="http://kentfredric.github.io/blog/tag/the-perl-jam-2/">the perl jam 2</a>
-            </p>
-        ]]></content>
-        <updated>2015-12-31T00:00:00Z</updated>
-        <category term="perl" />
-        <category term="the perl jam 2" />
-    </entry>
-</feed>
+                    <p><a href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#section-2">Continue reading...</a></p>
+                <p>Tags:
+                    <a href="http://kentfredric.github.io/blog/tag/perl/">perl</a>
+                    <a href="http://kentfredric.github.io/blog/tag/the-perl-jam-2/">the perl jam 2</a>
+                </p>
+            ]]></description>
+            <pubDate>
+                Thu, 31 Dec 2015 00:00:00 +0000
+            </pubDate>
+        </item>
+    </channel>
+</rss>
 
