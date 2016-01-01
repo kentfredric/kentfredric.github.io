@@ -165,15 +165,22 @@ sense on the command line where you can trust the person who populated
 
 <p>It allows you do to neat things like</p>
 
-<pre><code>  # read all of stdin, then read a file when stdin is empty
-  echo foo | perl ./script.pl                           -                           ./source_file_2
+<pre><code># read all of stdin, then read a file when stdin is empty
+echo foo | perl ./script.pl \
+                    - \
+                    ./source_file_2
 
-  # read all of file one, then all of file 2
-  perl ./script.pl                 ./sourcefile_1                 ./source_file_2
+# read all of file one, then all of file 2
+perl ./script.pl \
+          ./sourcefile_1 \
+          ./source_file_2
 
-  # read all of files 1 and 2, and then read source file 3 while
-  # decompressing it
-  perl ./script.pl             ./source_file_1             ./source_file_2             &#39;gzcat ./source_file_3|&#39;
+# read all of files 1 and 2, and then read source file 3 while
+# decompressing it
+perl ./script.pl \
+      ./source_file_1 \
+      ./source_file_2 \
+      &#39;gzcat ./source_file_3|&#39;
 </code></pre>
 
 <p>But this feature makes <strong>NO</strong> sense when you&#39;re on the internet using CGI, and the person passing your command line arguments is some person with an HTTP Client.</p>
