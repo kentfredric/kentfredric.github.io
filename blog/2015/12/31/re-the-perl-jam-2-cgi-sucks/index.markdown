@@ -87,3 +87,10 @@ and adding the complications that come when users try to use things that their l
 
 But given how long `CGI.pm` lived in core, and given how there's a substantial amount of its use due in part to that fact, we may
 need to consider incorporating competition to offset that problem.
+
+## Comments
+
+Please direct any feedback or corrections [to the Reddit thread](https://www.reddit.com/r/perl/comments/3yzkby/re_the_perl_jam_2_cgi_sucks/). Alternatively, message me on irc:
+
+  - irc.perl.org u:kentnl
+  - irc.freenode.org u:kent\n
