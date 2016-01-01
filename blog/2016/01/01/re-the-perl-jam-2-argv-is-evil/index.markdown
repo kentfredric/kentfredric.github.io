@@ -196,3 +196,9 @@ But either way
 - It makes sense to have this feature when you **know** you're working in a command line directly in a secure environement
 - It makes much less sense to a have this feature when you're not intending to work with the command line, or you're dealing with mixed environment security
 
+## Comments
+
+Please direct any feedback or corrections [to the Reddit thread](https://www.reddit.com/r/perl/comments/3yzkjq/re_the_perl_jam_2_argv_is_evil/). Alternatively, message me on irc:
+
+  - irc.perl.org u:kentnl
+  - irc.freenode.org u:kent\n
