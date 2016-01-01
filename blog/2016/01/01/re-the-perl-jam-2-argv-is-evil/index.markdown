@@ -98,22 +98,22 @@ sense on the command line where you can trust the person who populated
 
 It allows you do to neat things like
 
-      # read all of stdin, then read a file when stdin is empty
-      echo foo | perl ./script.pl \
-                          - \
-                          ./source_file_2
+    # read all of stdin, then read a file when stdin is empty
+    echo foo | perl ./script.pl \\
+                        - \\
+                        ./source_file_2
 
-      # read all of file one, then all of file 2
-      perl ./script.pl \
-                ./sourcefile_1 \
-                ./source_file_2
+    # read all of file one, then all of file 2
+    perl ./script.pl \\
+              ./sourcefile_1 \\
+              ./source_file_2
 
-      # read all of files 1 and 2, and then read source file 3 while
-      # decompressing it
-      perl ./script.pl \
-            ./source_file_1 \
-            ./source_file_2 \
-            'gzcat ./source_file_3|'
+    # read all of files 1 and 2, and then read source file 3 while
+    # decompressing it
+    perl ./script.pl \\
+          ./source_file_1 \\
+          ./source_file_2 \\
+          'gzcat ./source_file_3|'
 
 But this feature makes **NO** sense when you're on the internet using CGI, and the person passing your command line arguments is some person with an HTTP Client.
 
