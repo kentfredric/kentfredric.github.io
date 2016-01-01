@@ -25,17 +25,17 @@ I will of course go into far more detail than is strictly necessary.
 
 Netanel did not identify this quirk as such, but it underlies a significant chunk of his presentation.
 
-Both `CGI.pm` and the CGI protocol imply serious limitations on the security and performance of your Web Application, 
+Both `CGI.pm` and the CGI protocol imply serious limitations on the security and performance of your Web Application,
 and has been recommended against by everyone worth listening to, and is even documented as such
 [**IN CGI.pm itself**](https://metacpan.org/pod/release/LEEJO/CGI-4.25/lib/CGI.pod#CGI.pm-HAS-BEEN-REMOVED-FROM-THE-PERL-CORE)
 
-> CGI.pm is no longer considered good practice for developing web applications, including quick prototyping and small web scripts. 
+> CGI.pm is no longer considered good practice for developing web applications, including quick prototyping and small web scripts.
 There are far better, cleaner, quicker, easier, safer, more scalable, more extensible, more modern alternatives available at this point in time.
 
-The CGI protocol significantly blurs the lines between the Command Line interface, and the Web, in ways that prove to be detrimental, 
+The CGI protocol significantly blurs the lines between the Command Line interface, and the Web, in ways that prove to be detrimental,
 and can serve as an amplifier for bugs and security risks.
 
-One of the attacks he demonstrates relies heavily on a behaviour in Perl that is deemed useful for command line programs: The ability 
+One of the attacks he demonstrates relies heavily on a behaviour in Perl that is deemed useful for command line programs: The ability
 for the caller ( that is, the user of the command line program ), to specify, by way of arguments, names of arbitrary programs to execute to retrieve their output.
 
 This turns out to be a grave trap in a Web context, as HTTP `GET` Request parameters are passed to the CGI application as parameters to `@ARGV`,
