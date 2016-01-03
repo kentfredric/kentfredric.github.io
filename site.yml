@@ -28,12 +28,6 @@
 # Statocles::Site for a full list of attributes and what they do.
 site:
     class: 'Statocles::Site'
-
-    on:
-        - build:
-            $class: 'Statocles::Plugin::LinkCheck'
-            $sub: 'check_pages'
-
     args:
 
         # title: This is the title of the site, shown in the <title> tag
@@ -90,6 +84,10 @@ site:
         # deploy: This is the deploy object, used to deploy this site.
         deploy:
             $ref: 'deploy'
+
+        plugins:
+            link_checker:
+                $class: Statocles::Plugin::LinkCheck
 
 # theme: These are the settings for the theme.  See Statocles::Help::Theme for
 # more information, and Statocles::Theme for a full list of attributes and what
