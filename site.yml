@@ -86,6 +86,8 @@ site:
             $ref: 'deploy'
 
         plugins:
+            lint:
+                $class: Statocles::Plugin::HTMLLint
             link_checker:
                 $class: Statocles::Plugin::LinkCheck
 
