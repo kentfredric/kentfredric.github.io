@@ -73,7 +73,7 @@ fix the actual problems, and educate our way past the cultural issues that lead 
 
 <p>I will of course go into far more detail than is strictly necessary.</p>
 
-<h2>CGI Sucks</h2>
+<h2 id="cgi_sucks">CGI Sucks<a class="toplink" href="#top">^</a><a class="permalink" href="#cgi_sucks">⚓</a></h2>
 
 <h3>And its Documented that Nobody should use it</h3>
 
@@ -109,9 +109,9 @@ much like parameters on the command line.</p>
 
 <p>But this risk exists because of the Command-Line-as-a-Web-Protocol design flaw.</p>
 
-<h2>How do we fix it?</h2>
+<h2 id="how_do_we_fix_it_">How do we fix it?<a class="toplink" href="#top">^</a><a class="permalink" href="#how_do_we_fix_it_">⚓</a></h2>
 
-<h3>Kill CGI</h3>
+<h3 id="kill_cgi">Kill CGI<a class="toplink" href="#top">^</a><a class="permalink" href="#kill_cgi">⚓</a></h3>
 
 <p>We&#39;ve been trying as a community to kill its use. But it still flourishes in many ways.</p>
 
@@ -128,13 +128,13 @@ much like parameters on the command line.</p>
 <p>But its not a good justification to say &quot;Perl is Bad&quot; because people refuse to stop using bad software written in it,
 despite the attempts of the community of that language trying to kill it.</p>
 
-<h3>Use PSGI Instead</h3>
+<h3 id="use_psgi_instead">Use PSGI Instead<a class="toplink" href="#top">^</a><a class="permalink" href="#use_psgi_instead">⚓</a></h3>
 
 <p>People should be strongly encouraged to use any other standardized recognised Framework, especially ones that are implemented
 in terms of <a href="https://metacpan.org/pod/distribution/PSGI/PSGI.pod#SPECIFICATION">PSGI</a> and have the option of running
 on <a href="https://metacpan.org/pod/Plack">Plack</a> or any other <code>PSGI</code> compatible server.</p>
 
-<h3>PSGI Server in Core?</h3>
+<h3 id="psgi_server_in_core_">PSGI Server in Core?<a class="toplink" href="#top">^</a><a class="permalink" href="#psgi_server_in_core_">⚓</a></h3>
 
 <p>Perhaps we need to write a minimal subset of <code>Plack</code> and consider shipping it with Perl to encourage the use of <code>PSGI</code>.</p>
 
@@ -146,7 +146,7 @@ and adding the complications that come when users try to use things that their l
 <p>But given how long <code>CGI.pm</code> lived in core, and given how there&#39;s a substantial amount of its use due in part to that fact, we may
 need to consider incorporating competition to offset that problem.</p>
 
-<h2>Comments</h2>
+<h2 id="comments">Comments<a class="toplink" href="#top">^</a><a class="permalink" href="#comments">⚓</a></h2>
 
 <p>Please direct any feedback or corrections <a href="https://www.reddit.com/r/perl/comments/3yzkby/re_the_perl_jam_2_cgi_sucks/">to the Reddit thread</a>. Alternatively, message me on irc:</p>
 

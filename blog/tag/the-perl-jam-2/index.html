@@ -256,25 +256,25 @@ for reasons explained in <a href="/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/"
 <p>This is on the list of things that Netanel would have best served the Perl
 community by filing a bug when he discovered it.</p>
 
-<h2><code>&lt;&quot;ARGV&quot;&gt;</code> is evil</h2>
+<h2 id="_argv_is_evil"><code>&lt;&quot;ARGV&quot;&gt;</code> is evil<a class="toplink" href="/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#top">^</a><a class="permalink" href="/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#_argv_is_evil">⚓</a></h2>
 
 <p>Here is the most reduced code you can have that demonstrates the
 vulnerability in play.</p>
 
-<pre><code>use strict;
-use warnings;
+<pre><code class="hljs"><span class="hljs-keyword">use</span> <span class="hljs-keyword">strict</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-keyword">warnings</span>;
 
-# Pretend this came in through a CGI Request Paramete
-@ARGV=( &#39;echo exploited|&#39; );
+<span class="hljs-comment"># Pretend this came in through a CGI Request Paramete</span><span class="hljs-comment">
+</span><span class="hljs-variable">@ARGV</span>=( &#39;<span class="hljs-string">echo exploited|</span>&#39; );
 
-# This function should return a filehandle, but the user did something
-# to trick magical_function to return the string &quot;ARGV&quot;
+<span class="hljs-comment"># This function should return a filehandle, but the user did something</span><span class="hljs-comment">
+</span><span class="hljs-comment"># to trick magical_function to return the string &quot;ARGV&quot;</span><span class="hljs-comment">
+</span>
+<span class="hljs-keyword">my</span> <span class="hljs-type">$filehandle</span> = magical_function();
 
-my $filehandle = magical_function();
-
-# TRAP
-while (&lt;$filehandle&gt;) {
-  print $_;
+<span class="hljs-comment"># TRAP</span><span class="hljs-comment">
+</span><span class="hljs-keyword">while</span> (&lt;<span class="hljs-type">$filehandle</span>&gt;) {
+  <span class="hljs-function">print</span> <span class="hljs-variable">$_</span>;
 }
 </code></pre>
 
@@ -285,36 +285,36 @@ shouldn&#39;t: It treats the string as a <em>description</em> of a filehandle.</
 
 <p>So for instance, if somebody had done:</p>
 
-<pre><code># NOTE: OLD STYLE CODE, DO NOT USE
-open *WAT, &#39;-|&#39;, &#39;echo exploited|&#39;;
+<pre><code class="hljs"><span class="hljs-comment"># </span>NOTE<span class="hljs-comment">: OLD STYLE CODE, DO NOT USE</span><span class="hljs-comment">
+</span><span class="hljs-function">open</span> <span class="hljs-type">*WAT</span>, &#39;<span class="hljs-string">-|</span>&#39;, &#39;<span class="hljs-string">echo exploited|</span>&#39;;
 
-my $filehandle = &quot;WAT&quot;;
+<span class="hljs-keyword">my</span> <span class="hljs-type">$filehandle</span> = &quot;<span class="hljs-string">WAT</span>&quot;;
 
-while(&lt;$filehandle&gt;) {  }
+<span class="hljs-keyword">while</span>(&lt;<span class="hljs-type">$filehandle</span>&gt;) {  }
 </code></pre>
 
 <p>Perl behaves as if you&#39;d written:</p>
 
-<pre><code># NOTE: OLD STYLE CODE, DO NOT USE
-open *WAT, &#39;-|&#39;, &#39;echo exploited|&#39;;
+<pre><code class="hljs"><span class="hljs-comment"># </span>NOTE<span class="hljs-comment">: OLD STYLE CODE, DO NOT USE</span><span class="hljs-comment">
+</span><span class="hljs-function">open</span> <span class="hljs-type">*WAT</span>, &#39;<span class="hljs-string">-|</span>&#39;, &#39;<span class="hljs-string">echo exploited|</span>&#39;;
 
-my $filehandle = &quot;WAT&quot;;
+<span class="hljs-keyword">my</span> <span class="hljs-type">$filehandle</span> = &quot;<span class="hljs-string">WAT</span>&quot;;
 
-while(&lt;WAT&gt;) {  }
+<span class="hljs-keyword">while</span>(<span class="hljs-keyword">&lt;WAT&gt;</span>) {  }
 </code></pre>
 
 <p>In other Perl structures, this sort of transformation would be the kind of
 forbidden behaviour <code>strict</code> guards against:</p>
 
-<pre><code>use strict;
-use warnings;
+<pre><code class="hljs"><span class="hljs-keyword">use</span> <span class="hljs-keyword">strict</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-keyword">warnings</span>;
 
-open *WAT, &#39;|-&#39;, &#39;cat&#39;;
-my $handle = &#39;WAT&#39;;
+<span class="hljs-function">open</span> <span class="hljs-type">*WAT</span>, &#39;<span class="hljs-string">|-</span>&#39;, &#39;<span class="hljs-string">cat</span>&#39;;
+<span class="hljs-keyword">my</span> <span class="hljs-type">$handle</span> = &#39;<span class="hljs-string">WAT</span>&#39;;
 
-print { $handle } &quot;Hi there&quot;;
-# Can&#39;t use string (&quot;WAT&quot;) as a symbol ref while &quot;strict refs&quot; in use
-</code></pre>
+<span class="hljs-function">print</span> { <span class="hljs-type">$handle</span> } &quot;<span class="hljs-string">Hi there</span>&quot;;
+<span class="hljs-comment"># Can&#39;t use string (&quot;WAT&quot;) as a symbol ref while &quot;strict refs&quot; in use</span><span class="hljs-comment">
+</span></code></pre>
 
 <p>But the special value <code>ARGV</code> gets additionally complicated because it is
 &quot;Magic&quot; to <code>&lt;&gt;</code></p>
@@ -333,14 +333,14 @@ print { $handle } &quot;Hi there&quot;;
 
 <p>And that feature is implemented in terms of:</p>
 
-<pre><code>foreach my $file ( @ARGV ) {
-    open my $fh, $file;
+<pre><code class="hljs"><span class="hljs-keyword">foreach</span> <span class="hljs-keyword">my</span> <span class="hljs-type">$file</span> ( <span class="hljs-variable">@ARGV</span> ) {
+    <span class="hljs-function">open</span> <span class="hljs-keyword">my</span> <span class="hljs-type">$fh</span>, <span class="hljs-type">$file</span>;
 }
 </code></pre>
 
 <p>And that invokes the 2-arg-open magic, which means</p>
 
-<pre><code>open my $fh, &quot;echo hello |&quot;
+<pre><code class="hljs"><span class="hljs-function">open</span> <span class="hljs-keyword">my</span> <span class="hljs-type">$fh</span>, &quot;<span class="hljs-string">echo hello |</span>&quot;
 </code></pre>
 
 <p>Excutes <code>echo hello</code> and emits its output into the filehandle <code>$fh</code>.</p>
@@ -351,72 +351,72 @@ sense on the command line where you can trust the person who populated
 
 <p>It allows you do to neat things like</p>
 
-<pre><code># read all of stdin, then read a file when stdin is empty
-echo foo | perl ./script.pl \
+<pre><code class="hljs"><span class="hljs-comment"># read all of stdin, then read a file when stdin is empty</span><span class="hljs-comment">
+</span><span class="hljs-built-in">echo</span> foo <span class="hljs-keyword">|</span> perl ./script.pl \
                     - \
                     ./source_file_2
 
-# read all of file one, then all of file 2
-perl ./script.pl \
+<span class="hljs-comment"># read all of file one, then all of file 2</span><span class="hljs-comment">
+</span>perl ./script.pl \
           ./sourcefile_1 \
           ./source_file_2
 
-# read all of files 1 and 2, and then read source file 3 while
-# decompressing it
-perl ./script.pl \
+<span class="hljs-comment"># read all of files 1 and 2, and then read source file 3 while</span><span class="hljs-comment">
+</span><span class="hljs-comment"># decompressing it</span><span class="hljs-comment">
+</span>perl ./script.pl \
       ./source_file_1 \
       ./source_file_2 \
-      &#39;gzcat ./source_file_3|&#39;
+      <span class="hljs-string">&#39;gzcat ./source_file_3|&#39;</span>
 </code></pre>
 
 <p>But this feature makes <strong>NO</strong> sense when you&#39;re on the internet using CGI, and the person passing your command line arguments is some person with an HTTP Client.</p>
 
 <p>So on the Web using CGI, <code>strict</code> not doing its job escalates the problem to a security hole.</p>
 
-<h2>How do we fix it?</h2>
+<h2 id="how_do_we_fix_it_">How do we fix it?<a class="toplink" href="/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#top">^</a><a class="permalink" href="/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#how_do_we_fix_it_">⚓</a></h2>
 
-<h3>Locking it up with strictures</h3>
+<h3 id="locking_it_up_with_strictures">Locking it up with strictures<a class="toplink" href="/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#top">^</a><a class="permalink" href="/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#locking_it_up_with_strictures">⚓</a></h3>
 
 <p><code>use strict</code> really aught to imply <code>strict</code> here, and <code>&lt;&quot;ANYTHING&quot;&gt;</code> should subsequently be a strictures error. Adding that change however risks
 breaking existing code with real world usecases, so a painful deprecation cycle might be necessary somehow.</p>
 
 <p>Either way, I saw some hackers looking in to fixing this on <code>irc.perl.org#p5p</code> within minutes of it being presented.</p>
 
-<h3>Encouragement of using <code>&lt;&lt;&gt;&gt;</code> instead of <code>&lt;&gt;</code></h3>
+<h3 id="encouragement_of_using_instead_of_">Encouragement of using <code>&lt;&lt;&gt;&gt;</code> instead of <code>&lt;&gt;</code><a class="toplink" href="/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#top">^</a><a class="permalink" href="/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#encouragement_of_using_instead_of_">⚓</a></h3>
 
 <p>Perl has recognised the potential for risks associated with 2-argument open for a while,
 and the recommendation of 3-argument open has been standard fare in Perl Communities for a very long time now.</p>
 
 <p>As the the risk implied by</p>
 
-<pre><code>while(&lt;ARGV&gt;) { }
+<pre><code class="hljs"><span class="hljs-keyword">while</span>(<span class="hljs-keyword">&lt;ARGV&gt;</span>) { }
 </code></pre>
 
 <p>Is the same as the risk implied by</p>
 
-<pre><code>while(&lt;&gt;) { }
+<pre><code class="hljs"><span class="hljs-keyword">while</span>(&lt;&gt;) { }
 </code></pre>
 
 <p>We now have a feature since perl <code>5.22</code> that retains the ability to read files from <code>ARGV</code> without the risk
 of one of those files executing arbitrary code.</p>
 
-<pre><code>while(&lt;&lt;&gt;&gt;) { }
+<pre><code class="hljs"><span class="hljs-keyword">while</span>(&lt;&lt;&gt;&gt;) { }
 </code></pre>
 
 <p>And this should be encouraged in production quality code instead of either <code>&lt;&gt;</code> or <code>&lt;ARGV&gt;</code>.</p>
 
 <p>This fact is useless in our specific case of <code>&lt;$VARIABLE&gt;</code> mind, because</p>
 
-<pre><code># invalid, parsed as &lt;&lt;&quot;ARGV&quot; &gt;&gt; where &quot;ARGV&quot; is a heredoc terminator
-while(&lt;&lt;ARGV&gt;&gt;)
-
-# invalid, parsed as &lt;&lt;&quot;&quot; $filename&gt;&gt; where &quot;&quot; is a heredoc terminator
-while(&lt;&lt;$filehandle&gt;&gt;)
-</code></pre>
+<pre><code class="hljs"><span class="hljs-comment"># invalid, parsed as &lt;&lt;&quot;ARGV&quot; &gt;&gt; where &quot;ARGV&quot; is a heredoc terminator</span><span class="hljs-comment">
+</span><span class="hljs-keyword">while</span>(&lt;&lt;<span class="hljs-keyword">ARGV</span><span class="hljs-string">&gt;&gt;)</span><span class="hljs-string">
+</span><span class="hljs-string">
+</span><span class="hljs-string"># invalid, parsed as &lt;&lt;&quot;&quot; </span><span class="hljs-type">$filename</span><span class="hljs-string">&gt;&gt; where &quot;&quot; is a heredoc terminator</span><span class="hljs-string">
+</span><span class="hljs-string">while(&lt;&lt;</span><span class="hljs-type">$filehandle</span><span class="hljs-string">&gt;&gt;)</span><span class="hljs-string">
+</span></code></pre>
 
 <p>But its worth keeping in consideration.</p>
 
-<h3>Locking up the <code>ARGV</code> iterator.</h3>
+<h3 id="locking_up_the_argv_iterator_">Locking up the <code>ARGV</code> iterator.<a class="toplink" href="/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#top">^</a><a class="permalink" href="/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#locking_up_the_argv_iterator_">⚓</a></h3>
 
 <p>The deeper question is wether or not the ARGV iterator is something that should be deemed &quot;Sane&quot; in 2015.
 I&#39;ve clearly demonstrate it <em>can</em> be useful, but its also easy to demonstrate how it <em>can</em> pose a security
@@ -427,23 +427,23 @@ And this can be hard to even realise is a problem in a code security review.</p>
 which I believe is its primary usecase anyway, because it eliminates the need for multiple layers of quoting and lots
 of painful explicit calls to <code>open()</code>, which would grossly burden somebody who is simply trying to string together a short oneliner.</p>
 
-<pre><code>perl -e &#39;while(&lt;&gt;) { print $_ }&#39; &#39;file_a.txt&#39; &#39;gzcat file_b.txt|&#39; &#39;-&#39;
+<pre><code class="hljs">perl -e <span class="hljs-string">&#39;while(&lt;&gt;) { print $_ }&#39;</span> <span class="hljs-string">&#39;file_a.txt&#39;</span> <span class="hljs-string">&#39;gzcat file_b.txt|&#39;</span> <span class="hljs-string">&#39;-&#39;</span>
 </code></pre>
 
 <p>This code without the magic of <code>&lt;&gt;</code> and <code>ARGV</code> gives you a significant amount of code to write.
 So much in fact, that simply thinking about what it would take made me give up even tempting to write one as an example in Perl, so instead,
 an equivalent in bash will have to suffice:</p>
 
-<pre><code>cat file_a.txt &lt;( gzcat file_b.txt ) /dev/stdin
+<pre><code class="hljs">cat file_a.txt &lt;( gzcat file_b.txt ) /dev/stdin
 </code></pre>
 
 <p>Maybe we can develop a pragma that regulates what 2-arg <code>open</code> ( and its effective internals in ARGV ) are permitted to do?
 ie:</p>
 
-<pre><code>use Safe::Open2; # 2-arg-open assumes *all* arguments are filenames
-use Safe::Open2 qw/stdio/; # as with ^, but allows - based STDIO access
-use Safe::Open2 qw/exec stdio/; # allows pipe-exec and stdio
-</code></pre>
+<pre><code class="hljs"><span class="hljs-keyword">use</span> <span class="hljs-function">Safe::Open2</span>; <span class="hljs-comment"># 2-arg-open assumes *all* arguments are filenames</span><span class="hljs-comment">
+</span><span class="hljs-keyword">use</span> <span class="hljs-function">Safe::Open2</span> qw/stdio/; <span class="hljs-comment"># as with ^, but allows - based STDIO access</span><span class="hljs-comment">
+</span><span class="hljs-keyword">use</span> <span class="hljs-function">Safe::Open2</span> qw/exec stdio/; <span class="hljs-comment"># allows pipe-exec and stdio</span><span class="hljs-comment">
+</span></code></pre>
 
 <p>I don&#39;t honestly know, and its messy, becuase you can&#39;t really afford to turn it on/off on a per-module basis, because the security
 risk has global implications regardless of where you write it, as its fundementally dealing with the gateway perl uses to interact with the rest
@@ -459,7 +459,7 @@ because <code>ARGV</code> is implicitly global in nature, and unresolvably so.</
 <li>It makes much less sense to a have this feature when you&#39;re not intending to work with the command line, or you&#39;re dealing with mixed environment security</li>
 </ul>
 
-<h2>Comments</h2>
+<h2 id="comments">Comments<a class="toplink" href="/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#top">^</a><a class="permalink" href="/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#comments">⚓</a></h2>
 
 <p>Please direct any feedback or corrections <a href="https://www.reddit.com/r/perl/comments/3yzkjq/re_the_perl_jam_2_argv_is_evil/">to the Reddit thread</a>. Alternatively, message me on irc:</p>
 
@@ -507,7 +507,7 @@ fix the actual problems, and educate our way past the cultural issues that lead 
 
 <p>I will of course go into far more detail than is strictly necessary.</p>
 
-<h2>CGI Sucks</h2>
+<h2 id="cgi_sucks">CGI Sucks<a class="toplink" href="/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#top">^</a><a class="permalink" href="/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#cgi_sucks">⚓</a></h2>
 
 <h3>And its Documented that Nobody should use it</h3>
 
@@ -543,9 +543,9 @@ much like parameters on the command line.</p>
 
 <p>But this risk exists because of the Command-Line-as-a-Web-Protocol design flaw.</p>
 
-<h2>How do we fix it?</h2>
+<h2 id="how_do_we_fix_it_">How do we fix it?<a class="toplink" href="/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#top">^</a><a class="permalink" href="/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#how_do_we_fix_it_">⚓</a></h2>
 
-<h3>Kill CGI</h3>
+<h3 id="kill_cgi">Kill CGI<a class="toplink" href="/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#top">^</a><a class="permalink" href="/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#kill_cgi">⚓</a></h3>
 
 <p>We&#39;ve been trying as a community to kill its use. But it still flourishes in many ways.</p>
 
@@ -562,13 +562,13 @@ much like parameters on the command line.</p>
 <p>But its not a good justification to say &quot;Perl is Bad&quot; because people refuse to stop using bad software written in it,
 despite the attempts of the community of that language trying to kill it.</p>
 
-<h3>Use PSGI Instead</h3>
+<h3 id="use_psgi_instead">Use PSGI Instead<a class="toplink" href="/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#top">^</a><a class="permalink" href="/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#use_psgi_instead">⚓</a></h3>
 
 <p>People should be strongly encouraged to use any other standardized recognised Framework, especially ones that are implemented
 in terms of <a href="https://metacpan.org/pod/distribution/PSGI/PSGI.pod#SPECIFICATION">PSGI</a> and have the option of running
 on <a href="https://metacpan.org/pod/Plack">Plack</a> or any other <code>PSGI</code> compatible server.</p>
 
-<h3>PSGI Server in Core?</h3>
+<h3 id="psgi_server_in_core_">PSGI Server in Core?<a class="toplink" href="/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#top">^</a><a class="permalink" href="/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#psgi_server_in_core_">⚓</a></h3>
 
 <p>Perhaps we need to write a minimal subset of <code>Plack</code> and consider shipping it with Perl to encourage the use of <code>PSGI</code>.</p>
 
@@ -580,7 +580,7 @@ and adding the complications that come when users try to use things that their l
 <p>But given how long <code>CGI.pm</code> lived in core, and given how there&#39;s a substantial amount of its use due in part to that fact, we may
 need to consider incorporating competition to offset that problem.</p>
 
-<h2>Comments</h2>
+<h2 id="comments">Comments<a class="toplink" href="/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#top">^</a><a class="permalink" href="/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#comments">⚓</a></h2>
 
 <p>Please direct any feedback or corrections <a href="https://www.reddit.com/r/perl/comments/3yzkby/re_the_perl_jam_2_cgi_sucks/">to the Reddit thread</a>. Alternatively, message me on irc:</p>
 
