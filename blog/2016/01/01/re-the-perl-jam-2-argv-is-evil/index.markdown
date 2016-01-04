@@ -12,7 +12,7 @@ for reasons explained in [Part 1](/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/)
 This is on the list of things that Netanel would have best served the Perl
 community by filing a bug when he discovered it.
 
-## `<"ARGV">` is evil
+%= heading 2, q[`<"ARGV">` is evil]
 
 Here is the most reduced code you can have that demonstrates the
 vulnerability in play.
@@ -119,16 +119,16 @@ But this feature makes **NO** sense when you're on the internet using CGI, and t
 
 So on the Web using CGI, `strict` not doing its job escalates the problem to a security hole.
 
-## How do we fix it?
+%=heading 2, q[How do we fix it?]
 
-### Locking it up with strictures
+%=heading 3, q[Locking it up with strictures]
 
 `use strict` really aught to imply `strict` here, and `<"ANYTHING">` should subsequently be a strictures error. Adding that change however risks
 breaking existing code with real world usecases, so a painful deprecation cycle might be necessary somehow.
 
 Either way, I saw some hackers looking in to fixing this on `irc.perl.org#p5p` within minutes of it being presented.
 
-### Encouragement of using `<<>>` instead of `<>`
+%=heading 3, q[Encouragement of using `<<>>` instead of `<>`]
 
 Perl has recognised the potential for risks associated with 2-argument open for a while,
 and the recommendation of 3-argument open has been standard fare in Perl Communities for a very long time now.
@@ -158,7 +158,7 @@ This fact is useless in our specific case of `<$VARIABLE>` mind, because
 
 But its worth keeping in consideration.
 
-### Locking up the `ARGV` iterator.
+%=heading 3, q[Locking up the `ARGV` iterator.]
 
 The deeper question is wether or not the ARGV iterator is something that should be deemed "Sane" in 2015.
 I've clearly demonstrate it *can* be useful, but its also easy to demonstrate how it *can* pose a security
@@ -196,7 +196,7 @@ But either way
 - It makes sense to have this feature when you **know** you're working in a command line directly in a secure environement
 - It makes much less sense to a have this feature when you're not intending to work with the command line, or you're dealing with mixed environment security
 
-## Comments
+%=heading 2, q[Comments]
 
 Please direct any feedback or corrections [to the Reddit thread](https://www.reddit.com/r/perl/comments/3yzkjq/re_the_perl_jam_2_argv_is_evil/). Alternatively, message me on irc:
 
