@@ -94,6 +94,8 @@ site:
                 $class: Statocles::Plugin::Highlight
                 $args:
                     style: default
+            heading:
+                $class: KENTNL::Heading
 
 # theme: These are the settings for the theme.  See Statocles::Help::Theme for
 # more information, and Statocles::Theme for a full list of attributes and what

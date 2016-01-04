@@ -50,3 +50,11 @@ footer .tagline {
     text-align: right;
 }
 
+a.toplink, a.permalink {
+    top: -0.7em;
+    font-size: 50%;
+    position: relative;
+    line-height: 0;
+    vertical-align: baseline;
+    padding: 2px;
+}
