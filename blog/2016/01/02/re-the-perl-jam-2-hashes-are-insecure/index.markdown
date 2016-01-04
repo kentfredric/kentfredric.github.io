@@ -88,7 +88,7 @@ which includes the symbol tables that methods and global variables are stored in
 
 Which means any changes we make to the Hash Data structure to preserve taint bits will incur a significant performance overhead under Taint Mode.
 
-This would also risks a performance decrease for All Perl, even when *not* running in Taint Mode.
+This would also cause a performance decrease for All Perl, even when *not* running in Taint Mode.
 
 %= heading 4, q[Implementation Challenges]
 
