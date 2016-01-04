@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>http://kentfredric.github.io/blog/</id>
     <title>KENTNL&#39;s Blog</title>
-    <updated>2016-01-01T18:21:08Z</updated>
+    <updated>2016-01-04T19:34:52Z</updated>
     <link href="http://kentfredric.github.io/blog/index.atom" rel="self" />
     <link href="http://kentfredric.github.io/blog/" rel="alternate" />
-    <generator version="0.061">Statocles</generator>
+    <generator version="0.063">Statocles</generator>
     <entry>
         <id>http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/</id>
         <title>Re: The Perl Jam 2: &lt;&quot;ARGV&quot;&gt; is evil</title>
