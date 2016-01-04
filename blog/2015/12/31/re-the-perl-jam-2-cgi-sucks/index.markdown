@@ -20,7 +20,7 @@ fix the actual problems, and educate our way past the cultural issues that lead 
 
 I will of course go into far more detail than is strictly necessary.
 
-## CGI Sucks
+%=heading 2, q[CGI Sucks]
 ### And its Documented that Nobody should use it
 
 Netanel did not identify this quirk as such, but it underlies a significant chunk of his presentation.
@@ -52,9 +52,9 @@ And this would clearly be bad.
 
 But this risk exists because of the Command-Line-as-a-Web-Protocol design flaw.
 
-## How do we fix it?
+%=heading 2, q[How do we fix it?]
 
-### Kill CGI
+%=heading 3, q[Kill CGI]
 We've been trying as a community to kill its use. But it still flourishes in many ways.
 
 Every time you talk to the community, there will be somebody who will tell you not to use it.
@@ -70,13 +70,13 @@ Its had its time, and that time is long past. You should expect it to bite you.
 But its not a good justification to say "Perl is Bad" because people refuse to stop using bad software written in it,
 despite the attempts of the community of that language trying to kill it.
 
-### Use PSGI Instead
+%=heading 3, q[Use PSGI Instead]
 
 People should be strongly encouraged to use any other standardized recognised Framework, especially ones that are implemented
 in terms of [PSGI](https://metacpan.org/pod/distribution/PSGI/PSGI.pod#SPECIFICATION) and have the option of running
 on [Plack](https://metacpan.org/pod/Plack) or any other `PSGI` compatible server.
 
-### PSGI Server in Core?
+%=heading 3, q[PSGI Server in Core?]
 
 Perhaps we need to write a minimal subset of `Plack` and consider shipping it with Perl to encourage the use of `PSGI`.
 
@@ -88,7 +88,7 @@ and adding the complications that come when users try to use things that their l
 But given how long `CGI.pm` lived in core, and given how there's a substantial amount of its use due in part to that fact, we may
 need to consider incorporating competition to offset that problem.
 
-## Comments
+%=heading 2, q[Comments]
 
 Please direct any feedback or corrections [to the Reddit thread](https://www.reddit.com/r/perl/comments/3yzkby/re_the_perl_jam_2_cgi_sucks/). Alternatively, message me on irc:
 
