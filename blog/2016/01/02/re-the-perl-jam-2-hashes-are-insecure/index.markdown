@@ -15,7 +15,7 @@ Hashes and other arbitrary data structures as safe by default.
 This is not really true, however, when watching him talk about it, I realised
 he was right in a sense, just ... not how he imagined.
 
-## Hash Keys are a Potential Security Risk.
+%=heading 2, "Hash Keys are a Potential Security Risk."
 
 Under taint mode, strings from external sources are marked "tainted" until somebody manually untaints them.
 
@@ -66,11 +66,11 @@ but untainting it incorrectly, leaving exploitable code through to your system.
 
 Here, "Value spent time in a Hash Key" transparently untaining data can leverage itself to be a weak point.
 
-## How Do We Fix It
+%= heading 2, q[How Do We Fix It]
 
-### Considerations
+%= heading 3, q[Considerations]
 
-#### Performance
+%= heading 4, q[Performance]
 
 There's a big blocker inhibiting our ability to make Hash Keys retain taintedness.
 
@@ -83,7 +83,7 @@ Which means any changes we make to the Hash Data structure to preserve taint bit
 
 This would also risks a performance decrease for All Perl, even when *not* running in Taint Mode.
 
-#### Implementation Challenges
+%= heading 4, q[Implementation Challenges]
 
 How do we want this to behave?
 
@@ -98,16 +98,16 @@ How do we want this to behave?
     my $n_keys = scalar keys %{$hash};
 
 
-#### Backwards Compatibility
+%= heading 4, q[Backwards Compatibility]
 
 Because "Hash-Keys-Remove-Taint" has been a thing for so long, there is very likely code in production
 that is intentionally relying on this behaviour.
 
 How do we fix this without making a lot of existing and correct code suddenly become broken?
 
-### Suggestions
+%= heading 3, q[Suggestions]
 
-#### Tainted Hashes
+%= heading 4, q[Tainted Hashes]
 
 I would probably propose an option that allows taintedness to become a property of a hash,
 instead of merely a property of the strings contained in that hash.
@@ -123,7 +123,7 @@ have to be there for all the package/stash lookups.
 You could probably bodge together something that approximates this with `tie`, but `tie` is almost always
 more poison than cure.
 
-#### Lexically Applied Hash Tainting
+%= heading 4, q[Lexically Applied Hash Tainting]
 
 It seems possible to me that a pragma could be developed that doesn't affect the handling of Hashes intrinsically,
 but lexically changes how hash-access OPs are compiled in its context.
@@ -143,7 +143,7 @@ is inherently "Unsafe".
 And then you could potentially "turn on" that feature by default in some future perl release under tainting,
 or at least, turn it on as a feature with `use 5.${FUTURE}`.
 
-#### Call For Suggestions
+%= heading 4, q[Call For Suggestions]
 
 Clearly neither of those solutions are entirely elegant and may have serious road stops. And I honestly know almost
 nothing about XS when it comes to the implementation details in Perl Guts to know what is possible and what isn't.
@@ -151,7 +151,7 @@ nothing about XS when it comes to the implementation details in Perl Guts to kno
 So if any readers out there have some good ideas, there's a P5P who's accepting patches if they seem reasonable and the technical
 costs are affordable.
 
-## Comments
+%= heading 2, q[Comments]
 
 Please direct any feedback or corrections [to the Reddit thread](#PENDING-https://www.reddit.com/r/perl/comments/). Alternatively, message me on irc:
 
