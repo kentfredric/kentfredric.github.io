@@ -10,6 +10,7 @@
         <meta content="Statocles 0.063" name="generator">
         <meta content="https://avatars0.githubusercontent.com/u/44790?v=3&amp;s=400" property="og:image">
 
+        <link href="/theme/plugin/highlight/default.css" rel="stylesheet" type="text/css">
     </head>
     <body>
         <header>
@@ -76,37 +77,37 @@ he was right in a sense, just ... not how he imagined.</p>
 
 <p>For instance, Take the following JSON file</p>
 
-<pre><code>{ &quot;DROP TABLES *&quot;: &quot;DROP TABLES *&quot; }
+<pre><code class="hljs">{ <span class="hljs-string">&quot;DROP TABLES *&quot;</span>: <span class="hljs-string">&quot;DROP TABLES *&quot;</span> }
 </code></pre>
 
 <p>Now, using the following script:</p>
 
-<pre><code>use strict;
-use warnings;
-use JSON::MaybeXS;
-use Path::Tiny qw( path );
+<pre><code class="hljs"><span class="hljs-keyword">use</span> <span class="hljs-keyword">strict</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-keyword">warnings</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-function">JSON::MaybeXS</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-function">Path::Tiny</span> qw( path );
 
-my $structure = decode_json(path(&#39;/tmp/evil.json&#39;)-&gt;slurp_raw);
-system(&quot;echo &quot; . join q[], values %{$structure} );
+<span class="hljs-keyword">my</span> <span class="hljs-type">$structure</span> = decode_json(path(&#39;<span class="hljs-string">/tmp/evil.json</span>&#39;)-&gt;slurp_raw);
+<span class="hljs-function">system</span>(&quot;<span class="hljs-string">echo </span>&quot; . <span class="hljs-function">join</span> q[], <span class="hljs-function">values</span> <span class="hljs-type">%</span>{<span class="hljs-type">$structure</span>} );
 </code></pre>
 
 <p>This example demonstrates that the JSON back-end faithfully preserved taintness
 of the external data, and the code fails as expected.</p>
 
-<pre><code>$ env -i perl -T /tmp/json.pl
-Insecure dependency in system while running with -T switch at /tmp/json.pl line 7.
+<pre><code class="hljs">$ env -i perl -T /tmp/json.pl
+Insecure dependency <span class="hljs-keyword">in</span> system <span class="hljs-keyword">while</span> running with -T switch at /tmp/json.pl line 7.
 </code></pre>
 
 <p>However, hash keys are inherently different:</p>
 
-<pre><code>- system(&quot;echo &quot; . join q[], values %{$structure} );
-+ system(&quot;echo &quot; . join q[], keys   %{$structure} );
-</code></pre>
+<pre><code class="hljs">- system(&quot;echo &quot; . join q[], values %{$structure} );
+<span class="hljs-string">+ system(&quot;echo &quot; . join q[], keys   %{$structure} );</span><span class="hljs-string">
+</span></code></pre>
 
 <p>And now we have a problem:</p>
 
-<pre><code> $ env -i perl -T /tmp/json.pl
- DROP TABLES blog page site.yml static theme
+<pre><code class="hljs">$ env -i perl -T /tmp/json.pl
+DROP TABLES blog page site.yml static theme
 </code></pre>
 
 <p>Now this is not necessarily a problem if you apply clean code practices.</p>
@@ -145,15 +146,15 @@ which includes the symbol tables that methods and global variables are stored in
 
 <p>How do we want this to behave?</p>
 
-<pre><code>my $hash = {};
-$hash-&gt;{ taint(&quot;Hello&quot;) } = &quot;World&quot;;
-$hash-&gt;{ &quot;Hello&quot; } = &quot;Earth&quot;;
+<pre><code class="hljs"><span class="hljs-keyword">my</span> <span class="hljs-type">$hash</span> = {};
+<span class="hljs-type">$hash</span>-&gt;{ taint(&quot;<span class="hljs-string">Hello</span>&quot;) } = &quot;<span class="hljs-string">World</span>&quot;;
+<span class="hljs-type">$hash</span>-&gt;{ &quot;<span class="hljs-string">Hello</span>&quot; } = &quot;<span class="hljs-string">Earth</span>&quot;;
 
-# Is $value tainted or not here?
-my ($value,) = keys %{$hash};
-# How many keys are there exactly anyway, should we consider a tainted key
-# and its untainted companion to be identical or different keys?
-my $n_keys = scalar keys %{$hash};
+<span class="hljs-comment"># Is $value tainted or not here?</span><span class="hljs-comment">
+</span><span class="hljs-keyword">my</span> (<span class="hljs-type">$value</span>,) = <span class="hljs-function">keys</span> <span class="hljs-type">%</span>{<span class="hljs-type">$hash</span>};
+<span class="hljs-comment"># How many keys are there exactly anyway, should we consider a tainted key</span><span class="hljs-comment">
+</span><span class="hljs-comment"># and its untainted companion to be identical or different keys?</span><span class="hljs-comment">
+</span><span class="hljs-keyword">my</span> <span class="hljs-type">$n_keys</span> = <span class="hljs-function">scalar</span> <span class="hljs-function">keys</span> <span class="hljs-type">%</span>{<span class="hljs-type">$hash</span>};
 </code></pre>
 
 <h4 id="backwards_compatibility">Backwards Compatibility<a class="toplink" href="#top">^</a><a class="permalink" href="#backwards_compatibility">⚓</a></h4>
@@ -188,12 +189,12 @@ but lexically changes how hash-access OPs are compiled in its context.</p>
 
 <p>And it seems to me you could leverage such a thing to only apply to hash access calls on variables, as opposed to on GLOBs ( Package/Stashes )</p>
 
-<pre><code>use tainted::hashes;
+<pre><code class="hljs"><span class="hljs-keyword">use</span> t<span class="hljs-function">ainted::hashes</span>;
 
-Package::foo::method(); # Uses native Hash Access ops.
-
-$ref-&gt;{key} # uses taint safe ops if tainting is enabled.
-</code></pre>
+<span class="hljs-keyword">Package</span>::<span class="hljs-function">foo::method</span>(); <span class="hljs-comment"># Uses native Hash Access ops.</span><span class="hljs-comment">
+</span>
+<span class="hljs-type">$ref</span>-&gt;{key} <span class="hljs-comment"># uses taint safe ops if tainting is enabled.</span><span class="hljs-comment">
+</span></code></pre>
 
 <p>You&#39;d need to have some sort of semantics in play so you can handle the taintedness of hashes declared in other contexts,
 for instance, you might assume any hash that hasn&#39;t been seen by a tainted::hashes pragma and hasn&#39;t been marked &quot;Safe&quot;
