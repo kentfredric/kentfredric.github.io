@@ -163,7 +163,7 @@ costs are affordable.
 
 %= heading 2, q[Comments]
 
-Please direct any feedback or corrections [to the Reddit thread](#PENDING-https://www.reddit.com/r/perl/comments/). Alternatively, message me on irc:
+Please direct any feedback or corrections [to the Reddit thread](https://www.reddit.com/r/perl/comments/3zemb5/re_the_perl_jam_2_hashes_are_insecure/). Alternatively, message me on irc:
 
   - irc.perl.org u:kentnl
   - irc.freenode.org u:kent\n
