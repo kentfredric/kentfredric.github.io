@@ -79,9 +79,9 @@ And its based on how Hash data structures underly a significant proportion of th
 Not only do Anonymous Hash References use Hashes as their underlying model, but so does the entire `package Foo::` namespace hierarchy,
 which includes the symbol tables that methods and global variables are stored in.
 
-Which means any changes we make to the Hash Data structure to preserve taint bits risks a significant performance overhead under Taint Mode.
+Which means any changes we make to the Hash Data structure to preserve taint bits will incur a significant performance overhead under Taint Mode.
 
-It also potentially risks a performance decrease for All Perl, even when *not* running in Taint Mode.
+This would also risks a performance decrease for All Perl, even when *not* running in Taint Mode.
 
 #### Implementation Challenges
 
