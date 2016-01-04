@@ -48,6 +48,191 @@
 
             <article>
                 <header>
+                    <h1><a href="/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/">Re: The Perl Jam 2: Hashes are Insecure</a></h1>
+
+                    <p class="tags">Tags:
+                        <a href="/blog/tag/perl/" rel="tag">perl</a>
+                        <a href="/blog/tag/the-perl-jam-2/" rel="tag">the perl jam 2</a>
+                    </p>
+
+                    <aside>
+                        <p><time datetime="2016-01-02">
+                            Posted on 2016-01-02
+                        </time>
+                        </p>
+                    </aside>
+
+                </header>
+
+                <p>This is part 3 in a <a href="/blog/tag/the-perl-jam-2">series</a> of responses to
+<a href="https://www.youtube.com/watch?v=eH_u3C2WwQ0">Netanel Rubin&#39;s Presentation: The Perl Jam 2</a>,
+for reasons explained in <a href="/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/">Part 1</a></p>
+
+<p>In his original presentation, Netanel over focused on the assumption that we treat
+Hashes and other arbitrary data structures as safe by default.</p>
+
+<p>This is not really true, however, when watching him talk about it, I realised
+he was right in a sense, just ... not how he imagined.</p>
+
+<h2>Hash Keys are a Potential Security Risk.</h2>
+
+<p>Under taint mode, strings from external sources are marked &quot;tainted&quot; until somebody manually untaints them.</p>
+
+<p>And then any tainting-sensitive function calls can raise a fatal exception if they are passed sensitive data.</p>
+
+<p>For instance, Take the following JSON file</p>
+
+<pre><code>{ &quot;DROP TABLES *&quot;: &quot;DROP TABLES *&quot; }
+</code></pre>
+
+<p>Now, using the following script:</p>
+
+<pre><code>use strict;
+use warnings;
+use JSON::MaybeXS;
+use Path::Tiny qw( path );
+
+my $structure = decode_json(path(&#39;/tmp/evil.json&#39;)-&gt;slurp_raw);
+system(&quot;echo &quot; . join q[], values %{$structure} );
+</code></pre>
+
+<p>This example demonstrates that the JSON back-end faithfully preserved taintness
+of the external data, and the code fails as expected.</p>
+
+<pre><code>$ env -i perl -T /tmp/json.pl
+Insecure dependency in system while running with -T switch at /tmp/json.pl line 7.
+</code></pre>
+
+<p>However, hash keys are inherently different:</p>
+
+<pre><code>- system(&quot;echo &quot; . join q[], values %{$structure} );
++ system(&quot;echo &quot; . join q[], keys   %{$structure} );
+</code></pre>
+
+<p>And now we have a problem:</p>
+
+<pre><code> $ env -i perl -T /tmp/json.pl
+ DROP TABLES blog page site.yml static theme
+</code></pre>
+
+<p>Now this is not necessarily a problem if you apply clean code practices.</p>
+
+<p>As long as you make sure everything the user gave you is well sanitized, and you use Bound-Parameter style value passing to literally
+every API you use, then you might be OK.</p>
+
+<p>But Taint mode basically exists as a fall-back defense to guard against developers failing to vet all the inputs, so that if
+you missed something, Perl still has an opportunity to save the day.</p>
+
+<p>But people can also be needlessly lazy and rely entirely on Perl to save the day, when Perl is not psychic.</p>
+
+<p>And worse, you can be using Taint mode, but you could either be unintentionally untainting sensitive data, or intentionally untaining data
+but untainting it incorrectly, leaving exploitable code through to your system.</p>
+
+<p>Here, &quot;Value spent time in a Hash Key&quot; transparently untaining data can leverage itself to be a weak point.</p>
+
+<h2>How Do We Fix It</h2>
+
+<h3>Considerations</h3>
+
+<h4>Performance</h4>
+
+<p>There&#39;s a big blocker inhibiting our ability to make Hash Keys retain taintedness.</p>
+
+<p>And its based on how Hash data structures underly a significant proportion of the Perl Language.</p>
+
+<p>Not only do Anonymous Hash References use Hashes as their underlying model, but so does the entire <code>package Foo::</code> namespace hierarchy,
+which includes the symbol tables that methods and global variables are stored in.</p>
+
+<p>Which means any changes we make to the Hash Data structure to preserve taint bits risks a significant performance overhead under Taint Mode.</p>
+
+<p>It also potentially risks a performance decrease for All Perl, even when <em>not</em> running in Taint Mode.</p>
+
+<h4>Implementation Challenges</h4>
+
+<p>How do we want this to behave?</p>
+
+<pre><code>my $hash = {};
+$hash-&gt;{ taint(&quot;Hello&quot;) } = &quot;World&quot;;
+$hash-&gt;{ &quot;Hello&quot; } = &quot;Earth&quot;;
+
+# Is $value tainted or not here?
+my ($value,) = keys %{$hash};
+# How many keys are there exactly anyway, should we consider a tainted key
+# and its untainted companion to be identical or different keys?
+my $n_keys = scalar keys %{$hash};
+</code></pre>
+
+<h4>Backwards Compatibility</h4>
+
+<p>Because &quot;Hash-Keys-Remove-Taint&quot; has been a thing for so long, there is very likely code in production
+that is intentionally relying on this behaviour.</p>
+
+<p>How do we fix this without making a lot of existing and correct code suddenly become broken?</p>
+
+<h3>Suggestions</h3>
+
+<h4>Tainted Hashes</h4>
+
+<p>I would probably propose an option that allows taintedness to become a property of a hash,
+instead of merely a property of the strings contained in that hash.</p>
+
+<p>Tools like JSON decoders would explicitly mark any hash constructed from tainted data to be implicitly
+tainted, and then hash internals don&#39;t care about taintedness on a per-key/per-value level, and just re-tag
+everything that came out of a tainted hash ( either by calls to keys or values ) became tainted by default.</p>
+
+<p>But sadly, this doesn&#39;t mitigate the potential performance negatives of adding the feature, because
+there still has to be an &quot;Am I tainted? -&gt; Return tainted value&quot; stage, and that code path would still
+have to be there for all the package/stash lookups.</p>
+
+<p>You could probably bodge together something that approximates this with <code>tie</code>, but <code>tie</code> is almost always
+more poison than cure.</p>
+
+<h4>Lexically Applied Hash Tainting</h4>
+
+<p>It seems possible to me that a pragma could be developed that doesn&#39;t affect the handling of Hashes intrinsically,
+but lexically changes how hash-access OPs are compiled in its context.</p>
+
+<p>And it seems to me you could leverage such a thing to only apply to hash access calls on variables, as opposed to on GLOBs ( Package/Stashes )</p>
+
+<pre><code>use tainted::hashes;
+
+Package::foo::method(); # Uses native Hash Access ops.
+
+$ref-&gt;{key} # uses taint safe ops if tainting is enabled.
+</code></pre>
+
+<p>You&#39;d need to have some sort of semantics in play so you can handle the taintedness of hashes declared in other contexts,
+for instance, you might assume any hash that hasn&#39;t been seen by a tainted::hashes pragma and hasn&#39;t been marked &quot;Safe&quot;
+is inherently &quot;Unsafe&quot;.</p>
+
+<p>And then you could potentially &quot;turn on&quot; that feature by default in some future perl release under tainting,
+or at least, turn it on as a feature with <code>use 5.${FUTURE}</code>.</p>
+
+<h4>Call For Suggestions</h4>
+
+<p>Clearly neither of those solutions are entirely elegant and may have serious road stops. And I honestly know almost
+nothing about XS when it comes to the implementation details in Perl Guts to know what is possible and what isn&#39;t.</p>
+
+<p>So if any readers out there have some good ideas, there&#39;s a P5P who&#39;s accepting patches if they seem reasonable and the technical
+costs are affordable.</p>
+
+<h2>Comments</h2>
+
+<p>Please direct any feedback or corrections <a href="/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#PENDING-https://www.reddit.com/r/perl/comments/">to the Reddit thread</a>. Alternatively, message me on irc:</p>
+
+<ul>
+<li>irc.perl.org u:kentnl</li>
+<li>irc.freenode.org u:kent\n</li>
+</ul>
+
+<p>Or if you want, you can <a href="https://github.com/kentfredric/kentfredric.github.io/pulls">patch the blog yourself</a>
+or <a href="https://github.com/kentfredric/kentfredric.github.io/issues">file a bug on it</a></p>
+
+
+
+            </article>
+            <article>
+                <header>
                     <h1><a href="/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/">Re: The Perl Jam 2: &lt;&quot;ARGV&quot;&gt; is evil</a></h1>
 
                     <p class="tags">Tags:
