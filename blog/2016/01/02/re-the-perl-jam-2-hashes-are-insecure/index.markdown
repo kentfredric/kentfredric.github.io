@@ -23,33 +23,40 @@ And then any tainting-sensitive function calls can raise a fatal exception if th
 
 For instance, Take the following JSON file
 
-    { "DROP TABLES *": "DROP TABLES *" }
+%=code highlight JavaScript => begin
+{ "DROP TABLES *": "DROP TABLES *" }
+%end
 
 Now, using the following script:
+%=code highlight Perl => begin
+use strict;
+use warnings;
+use JSON::MaybeXS;
+use Path::Tiny qw( path );
 
-    use strict;
-    use warnings;
-    use JSON::MaybeXS;
-    use Path::Tiny qw( path );
-
-    my $structure = decode_json(path('/tmp/evil.json')->slurp_raw);
-    system("echo " . join q[], values %{$structure} );
+my $structure = decode_json(path('/tmp/evil.json')->slurp_raw);
+system("echo " . join q[], values %{$structure} );
+%end
 
 This example demonstrates that the JSON back-end faithfully preserved taintness
 of the external data, and the code fails as expected.
-
-    $ env -i perl -T /tmp/json.pl
-    Insecure dependency in system while running with -T switch at /tmp/json.pl line 7.
+%=code highlight bash => begin
+$ env -i perl -T /tmp/json.pl
+Insecure dependency in system while running with -T switch at /tmp/json.pl line 7.
+%end
 
 However, hash keys are inherently different:
-
-    - system("echo " . join q[], values %{$structure} );
-    + system("echo " . join q[], keys   %{$structure} );
+%=code highlight diff => begin
+- system("echo " . join q[], values %{$structure} );
++ system("echo " . join q[], keys   %{$structure} );
+%end
 
 And now we have a problem:
 
-     $ env -i perl -T /tmp/json.pl
-     DROP TABLES blog page site.yml static theme
+%=code highlight bash => begin
+$ env -i perl -T /tmp/json.pl
+DROP TABLES blog page site.yml static theme
+%end
 
 Now this is not necessarily a problem if you apply clean code practices.
 
@@ -87,16 +94,17 @@ This would also risks a performance decrease for All Perl, even when *not* runni
 
 How do we want this to behave?
 
-    my $hash = {};
-    $hash->{ taint("Hello") } = "World";
-    $hash->{ "Hello" } = "Earth";
+%=code highlight Perl => begin
+my $hash = {};
+$hash->{ taint("Hello") } = "World";
+$hash->{ "Hello" } = "Earth";
 
-    # Is $value tainted or not here?
-    my ($value,) = keys %{$hash};
-    # How many keys are there exactly anyway, should we consider a tainted key
-    # and its untainted companion to be identical or different keys?
-    my $n_keys = scalar keys %{$hash};
-
+# Is $value tainted or not here?
+my ($value,) = keys %{$hash};
+# How many keys are there exactly anyway, should we consider a tainted key
+# and its untainted companion to be identical or different keys?
+my $n_keys = scalar keys %{$hash};
+%=end
 
 %= heading 4, q[Backwards Compatibility]
 
@@ -130,11 +138,13 @@ but lexically changes how hash-access OPs are compiled in its context.
 
 And it seems to me you could leverage such a thing to only apply to hash access calls on variables, as opposed to on GLOBs ( Package/Stashes )
 
-    use tainted::hashes;
+%=code highlight Perl => begin
+use tainted::hashes;
 
-    Package::foo::method(); # Uses native Hash Access ops.
+Package::foo::method(); # Uses native Hash Access ops.
 
-    $ref->{key} # uses taint safe ops if tainting is enabled.
+$ref->{key} # uses taint safe ops if tainting is enabled.
+%end
 
 You'd need to have some sort of semantics in play so you can handle the taintedness of hashes declared in other contexts,
 for instance, you might assume any hash that hasn't been seen by a tainted::hashes pragma and hasn't been marked "Safe"
