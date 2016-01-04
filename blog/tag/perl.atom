@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>http://kentfredric.github.io/blog/tag/perl/</id>
     <title>KENTNL&#39;s Blog</title>
-    <updated>2016-01-04T21:03:37Z</updated>
+    <updated>2016-01-04T23:33:28Z</updated>
     <link href="http://kentfredric.github.io/blog/tag/perl.atom" rel="self" />
     <link href="http://kentfredric.github.io/blog/tag/perl/" rel="alternate" />
     <generator version="0.063">Statocles</generator>
@@ -21,7 +21,7 @@ Hashes and other arbitrary data structures as safe by default.</p>
 <p>This is not really true, however, when watching him talk about it, I realised
 he was right in a sense, just ... not how he imagined.</p>
 
-<h2>Hash Keys are a Potential Security Risk.</h2>
+<h2 id="hash_keys_are_a_potential_security_risk_">Hash Keys are a Potential Security Risk.<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#hash_keys_are_a_potential_security_risk_">⚓</a></h2>
 
 <p>Under taint mode, strings from external sources are marked &quot;tainted&quot; until somebody manually untaints them.</p>
 
@@ -77,11 +77,11 @@ but untainting it incorrectly, leaving exploitable code through to your system.<
 
 <p>Here, &quot;Value spent time in a Hash Key&quot; transparently untaining data can leverage itself to be a weak point.</p>
 
-<h2>How Do We Fix It</h2>
+<h2 id="how_do_we_fix_it">How Do We Fix It<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#how_do_we_fix_it">⚓</a></h2>
 
-<h3>Considerations</h3>
+<h3 id="considerations">Considerations<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#considerations">⚓</a></h3>
 
-<h4>Performance</h4>
+<h4 id="performance">Performance<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#performance">⚓</a></h4>
 
 <p>There&#39;s a big blocker inhibiting our ability to make Hash Keys retain taintedness.</p>
 
@@ -90,11 +90,11 @@ but untainting it incorrectly, leaving exploitable code through to your system.<
 <p>Not only do Anonymous Hash References use Hashes as their underlying model, but so does the entire <code>package Foo::</code> namespace hierarchy,
 which includes the symbol tables that methods and global variables are stored in.</p>
 
-<p>Which means any changes we make to the Hash Data structure to preserve taint bits risks a significant performance overhead under Taint Mode.</p>
+<p>Which means any changes we make to the Hash Data structure to preserve taint bits will incur a significant performance overhead under Taint Mode.</p>
 
-<p>It also potentially risks a performance decrease for All Perl, even when <em>not</em> running in Taint Mode.</p>
+<p>This would also risks a performance decrease for All Perl, even when <em>not</em> running in Taint Mode.</p>
 
-<h4>Implementation Challenges</h4>
+<h4 id="implementation_challenges">Implementation Challenges<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#implementation_challenges">⚓</a></h4>
 
 <p>How do we want this to behave?</p>
 
@@ -109,16 +109,16 @@ my ($value,) = keys %{$hash};
 my $n_keys = scalar keys %{$hash};
 </code></pre>
 
-<h4>Backwards Compatibility</h4>
+<h4 id="backwards_compatibility">Backwards Compatibility<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#backwards_compatibility">⚓</a></h4>
 
 <p>Because &quot;Hash-Keys-Remove-Taint&quot; has been a thing for so long, there is very likely code in production
 that is intentionally relying on this behaviour.</p>
 
 <p>How do we fix this without making a lot of existing and correct code suddenly become broken?</p>
 
-<h3>Suggestions</h3>
+<h3 id="suggestions">Suggestions<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#suggestions">⚓</a></h3>
 
-<h4>Tainted Hashes</h4>
+<h4 id="tainted_hashes">Tainted Hashes<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#tainted_hashes">⚓</a></h4>
 
 <p>I would probably propose an option that allows taintedness to become a property of a hash,
 instead of merely a property of the strings contained in that hash.</p>
@@ -134,7 +134,7 @@ have to be there for all the package/stash lookups.</p>
 <p>You could probably bodge together something that approximates this with <code>tie</code>, but <code>tie</code> is almost always
 more poison than cure.</p>
 
-<h4>Lexically Applied Hash Tainting</h4>
+<h4 id="lexically_applied_hash_tainting">Lexically Applied Hash Tainting<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#lexically_applied_hash_tainting">⚓</a></h4>
 
 <p>It seems possible to me that a pragma could be developed that doesn&#39;t affect the handling of Hashes intrinsically,
 but lexically changes how hash-access OPs are compiled in its context.</p>
@@ -155,7 +155,7 @@ is inherently &quot;Unsafe&quot;.</p>
 <p>And then you could potentially &quot;turn on&quot; that feature by default in some future perl release under tainting,
 or at least, turn it on as a feature with <code>use 5.${FUTURE}</code>.</p>
 
-<h4>Call For Suggestions</h4>
+<h4 id="call_for_suggestions">Call For Suggestions<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#call_for_suggestions">⚓</a></h4>
 
 <p>Clearly neither of those solutions are entirely elegant and may have serious road stops. And I honestly know almost
 nothing about XS when it comes to the implementation details in Perl Guts to know what is possible and what isn&#39;t.</p>
@@ -163,7 +163,7 @@ nothing about XS when it comes to the implementation details in Perl Guts to kno
 <p>So if any readers out there have some good ideas, there&#39;s a P5P who&#39;s accepting patches if they seem reasonable and the technical
 costs are affordable.</p>
 
-<h2>Comments</h2>
+<h2 id="comments">Comments<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#comments">⚓</a></h2>
 
 <p>Please direct any feedback or corrections <a href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#PENDING-https://www.reddit.com/r/perl/comments/">to the Reddit thread</a>. Alternatively, message me on irc:</p>
 

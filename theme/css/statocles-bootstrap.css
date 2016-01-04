@@ -50,3 +50,16 @@ footer .tagline {
     text-align: right;
 }
 
+a.toplink, a.permalink, a.footnote_ref {
+    top: -0.7em;
+    font-size: 50%;
+}
+a.footnote_ref {
+    font-size: 75%;
+}
+a.toplink, a.permalink, p.footnote > *, a.footnote_ref {
+    position: relative;
+    line-height: 0;
+    vertical-align: baseline;
+    padding: 2px;
+}
