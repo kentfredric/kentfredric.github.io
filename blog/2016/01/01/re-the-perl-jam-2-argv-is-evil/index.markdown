@@ -17,21 +17,23 @@ community by filing a bug when he discovered it.
 Here is the most reduced code you can have that demonstrates the
 vulnerability in play.
 
-    use strict;
-    use warnings;
+%= code highlight Perl => begin
+use strict;
+use warnings;
 
-    # Pretend this came in through a CGI Request Paramete
-    @ARGV=( 'echo exploited|' );
+# Pretend this came in through a CGI Request Paramete
+@ARGV=( 'echo exploited|' );
 
-    # This function should return a filehandle, but the user did something
-    # to trick magical_function to return the string "ARGV"
+# This function should return a filehandle, but the user did something
+# to trick magical_function to return the string "ARGV"
 
-    my $filehandle = magical_function();
+my $filehandle = magical_function();
 
-    # TRAP
-    while (<$filehandle>) {
-      print $_;
-    }
+# TRAP
+while (<$filehandle>) {
+  print $_;
+}
+% end
 
 As long as `$filehandle` is in fact a FileHandle, nothing weird happens.
 
@@ -40,33 +42,39 @@ shouldn't: It treats the string as a *description* of a filehandle.
 
 So for instance, if somebody had done:
 
-    # NOTE: OLD STYLE CODE, DO NOT USE
-    open *WAT, '-|', 'echo exploited|';
+%= code highlight Perl => begin
+# NOTE: OLD STYLE CODE, DO NOT USE
+open *WAT, '-|', 'echo exploited|';
 
-    my $filehandle = "WAT";
+my $filehandle = "WAT";
 
-    while(<$filehandle>) {  }
+while(<$filehandle>) {  }
+% end
 
 Perl behaves as if you'd written:
 
-    # NOTE: OLD STYLE CODE, DO NOT USE
-    open *WAT, '-|', 'echo exploited|';
+%= code highlight Perl => begin
+# NOTE: OLD STYLE CODE, DO NOT USE
+open *WAT, '-|', 'echo exploited|';
 
-    my $filehandle = "WAT";
+my $filehandle = "WAT";
 
-    while(<WAT>) {  }
+while(<WAT>) {  }
+% end
 
 In other Perl structures, this sort of transformation would be the kind of
 forbidden behaviour `strict` guards against:
 
-    use strict;
-    use warnings;
+%= code highlight Perl => begin
+use strict;
+use warnings;
 
-    open *WAT, '|-', 'cat';
-    my $handle = 'WAT';
+open *WAT, '|-', 'cat';
+my $handle = 'WAT';
 
-    print { $handle } "Hi there";
-    # Can't use string ("WAT") as a symbol ref while "strict refs" in use
+print { $handle } "Hi there";
+# Can't use string ("WAT") as a symbol ref while "strict refs" in use
+% end
 
 But the special value `ARGV` gets additionally complicated because it is
 "Magic" to `<>`
@@ -82,13 +90,17 @@ But the special value `ARGV` gets additionally complicated because it is
 
 And that feature is implemented in terms of:
 
-    foreach my $file ( @ARGV ) {
-        open my $fh, $file;
-    }
+%= code highlight Perl => begin
+foreach my $file ( @ARGV ) {
+    open my $fh, $file;
+}
+% end
 
 And that invokes the 2-arg-open magic, which means
 
-    open my $fh, "echo hello |"
+%= code highlight Perl => begin
+open my $fh, "echo hello |"
+% end
 
 Excutes `echo hello` and emits its output into the filehandle `$fh`.
 
@@ -98,22 +110,24 @@ sense on the command line where you can trust the person who populated
 
 It allows you do to neat things like
 
-    # read all of stdin, then read a file when stdin is empty
-    echo foo | perl ./script.pl \\
-                        - \\
-                        ./source_file_2
+%= code highlight bash => begin
+# read all of stdin, then read a file when stdin is empty
+echo foo | perl ./script.pl \\
+                    - \\
+                    ./source_file_2
 
-    # read all of file one, then all of file 2
-    perl ./script.pl \\
-              ./sourcefile_1 \\
-              ./source_file_2
+# read all of file one, then all of file 2
+perl ./script.pl \\
+          ./sourcefile_1 \\
+          ./source_file_2
 
-    # read all of files 1 and 2, and then read source file 3 while
-    # decompressing it
-    perl ./script.pl \\
-          ./source_file_1 \\
-          ./source_file_2 \\
-          'gzcat ./source_file_3|'
+# read all of files 1 and 2, and then read source file 3 while
+# decompressing it
+perl ./script.pl \\
+      ./source_file_1 \\
+      ./source_file_2 \\
+      'gzcat ./source_file_3|'
+%end
 
 But this feature makes **NO** sense when you're on the internet using CGI, and the person passing your command line arguments is some person with an HTTP Client.
 
@@ -135,26 +149,34 @@ and the recommendation of 3-argument open has been standard fare in Perl Communi
 
 As the the risk implied by
 
-    while(<ARGV>) { }
+%= code highlight Perl => begin
+while(<ARGV>) { }
+% end
 
 Is the same as the risk implied by
 
-    while(<>) { }
+%= code highlight Perl => begin
+while(<>) { }
+% end
 
 We now have a feature since perl `5.22` that retains the ability to read files from `ARGV` without the risk
 of one of those files executing arbitrary code.
 
-    while(<<>>) { }
+%= code highlight Perl => begin
+while(<<>>) { }
+% end
 
 And this should be encouraged in production quality code instead of either `<>` or `<ARGV>`.
 
 This fact is useless in our specific case of `<$VARIABLE>` mind, because
 
-    # invalid, parsed as <<"ARGV" >> where "ARGV" is a heredoc terminator
-    while(<<ARGV>>)
+%= code highlight Perl => begin
+# invalid, parsed as <<"ARGV" >> where "ARGV" is a heredoc terminator
+while(<<ARGV>>)
 
-    # invalid, parsed as <<"" $filename>> where "" is a heredoc terminator
-    while(<<$filehandle>>)
+# invalid, parsed as <<"" $filename>> where "" is a heredoc terminator
+while(<<$filehandle>>)
+% end
 
 But its worth keeping in consideration.
 
@@ -169,21 +191,26 @@ Were it me, given the lethality of those features, I would be wanting to depreca
 which I believe is its primary usecase anyway, because it eliminates the need for multiple layers of quoting and lots
 of painful explicit calls to `open()`, which would grossly burden somebody who is simply trying to string together a short oneliner.
 
-    perl -e 'while(<>) { print $_ }' 'file_a.txt' 'gzcat file_b.txt|' '-'
+%= code highlight bash => begin
+perl -e 'while(<>) { print $_ }' 'file_a.txt' 'gzcat file_b.txt|' '-'
+% end
 
 This code without the magic of `<>` and `ARGV` gives you a significant amount of code to write.
 So much in fact, that simply thinking about what it would take made me give up even tempting to write one as an example in Perl, so instead,
 an equivalent in bash will have to suffice:
 
-    cat file_a.txt <( gzcat file_b.txt ) /dev/stdin
+%= code highlight bash => begin
+cat file_a.txt <( gzcat file_b.txt ) /dev/stdin
+% end
 
 Maybe we can develop a pragma that regulates what 2-arg `open` ( and its effective internals in ARGV ) are permitted to do?
 ie:
 
-    use Safe::Open2; # 2-arg-open assumes *all* arguments are filenames
-    use Safe::Open2 qw/stdio/; # as with ^, but allows - based STDIO access
-    use Safe::Open2 qw/exec stdio/; # allows pipe-exec and stdio
-
+%= code highlight Perl => begin
+use Safe::Open2; # 2-arg-open assumes *all* arguments are filenames
+use Safe::Open2 qw/stdio/; # as with ^, but allows - based STDIO access
+use Safe::Open2 qw/exec stdio/; # allows pipe-exec and stdio
+% end
 I don't honestly know, and its messy, becuase you can't really afford to turn it on/off on a per-module basis, because the security
 risk has global implications regardless of where you write it, as its fundementally dealing with the gateway perl uses to interact with the rest
 of the operating system.
