@@ -1,16 +1,34 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/</loc>
+        <loc>http://kentfredric.github.io/blog/tag/the-perl-jam-2/</loc>
+        <changefreq>daily</changefreq>
+        <priority>0.3</priority>
+        <lastmod>2016-01-02</lastmod>
+    </url>
+    <url>
+        <loc>http://kentfredric.github.io/page/</loc>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
-        <lastmod>2016-01-01</lastmod>
+        <lastmod>2016-01-05</lastmod>
+    </url>
+    <url>
+        <loc>http://kentfredric.github.io/blog/tag/perl/</loc>
+        <changefreq>daily</changefreq>
+        <priority>0.3</priority>
+        <lastmod>2016-01-02</lastmod>
     </url>
     <url>
         <loc>http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/</loc>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
         <lastmod>2016-01-02</lastmod>
+    </url>
+    <url>
+        <loc>http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+        <lastmod>2016-01-01</lastmod>
     </url>
     <url>
         <loc>http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/</loc>
@@ -23,24 +41,6 @@
         <changefreq>daily</changefreq>
         <priority>0.3</priority>
         <lastmod>2016-01-02</lastmod>
-    </url>
-    <url>
-        <loc>http://kentfredric.github.io/blog/tag/the-perl-jam-2/</loc>
-        <changefreq>daily</changefreq>
-        <priority>0.3</priority>
-        <lastmod>2016-01-02</lastmod>
-    </url>
-    <url>
-        <loc>http://kentfredric.github.io/blog/tag/perl/</loc>
-        <changefreq>daily</changefreq>
-        <priority>0.3</priority>
-        <lastmod>2016-01-02</lastmod>
-    </url>
-    <url>
-        <loc>http://kentfredric.github.io/page/</loc>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-        <lastmod>2016-01-05</lastmod>
     </url>
 </urlset>
 

@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>http://kentfredric.github.io/blog/tag/perl/</id>
     <title>KENTNL&#39;s Blog</title>
-    <updated>2016-01-05T02:12:17Z</updated>
+    <updated>2016-01-05T15:09:58Z</updated>
     <link href="http://kentfredric.github.io/blog/tag/perl.atom" rel="self" />
     <link href="http://kentfredric.github.io/blog/tag/perl/" rel="alternate" />
-    <generator version="0.063">Statocles</generator>
+    <generator version="0.064">Statocles</generator>
     <entry>
         <id>http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/</id>
         <title>Re: The Perl Jam 2: Hashes are Insecure</title>
