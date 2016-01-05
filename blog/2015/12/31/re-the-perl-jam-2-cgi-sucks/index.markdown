@@ -52,6 +52,8 @@ And this would clearly be bad.
 
 But this risk exists because of the Command-Line-as-a-Web-Protocol design flaw.
 
+---
+
 %=heading 2, q[How do we fix it?]
 
 %=heading 3, q[Kill CGI]

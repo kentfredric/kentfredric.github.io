@@ -58,6 +58,8 @@ $ env -i perl -T /tmp/json.pl
 DROP TABLES blog page site.yml static theme
 %end
 
+---
+
 Now this is not necessarily a problem if you apply clean code practices.
 
 As long as you make sure everything the user gave you is well sanitized, and you use Bound-Parameter style value passing to literally

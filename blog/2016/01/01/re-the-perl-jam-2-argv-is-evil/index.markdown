@@ -40,6 +40,8 @@ As long as `$filehandle` is in fact a FileHandle, nothing weird happens.
 However, when $filehandle is a *string*, Perl does something it typically
 shouldn't: It treats the string as a *description* of a filehandle.
 
+---
+
 So for instance, if somebody had done:
 
 %= code highlight Perl => begin
