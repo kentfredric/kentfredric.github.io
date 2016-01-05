@@ -74,7 +74,7 @@ despite the attempts of the community of that language trying to kill it.
 
 %=heading 3, q[Use PSGI Instead]
 
-People should be strongly encouraged to use any other standardized recognised Framework, especially ones that are implemented
+People should be strongly encouraged to [use any other standardized recognised Framework](http://shadow.cat/blog/matt-s-trout/mstpan-1/), especially ones that are implemented
 in terms of [PSGI](https://metacpan.org/pod/distribution/PSGI/PSGI.pod#SPECIFICATION) and have the option of running
 on [Plack](https://metacpan.org/pod/Plack) or any other `PSGI` compatible server.
 
