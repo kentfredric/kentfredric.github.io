@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-% for my $page ( @$pages ) {
+  % for my $page ( sort { $a->path cmp $b->path } @$pages ) {
     <url>
         <loc><%= $site->url( $page->path ) %></loc>
         <changefreq><%= $page->search_change_frequency %></changefreq>
