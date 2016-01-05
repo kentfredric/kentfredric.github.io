@@ -93,7 +93,9 @@ vulnerability in play.</p>
 <p>However, when $filehandle is a <em>string</em>, Perl does something it typically
 shouldn&#39;t: It treats the string as a <em>description</em> of a filehandle.</p>
 
-<p>So for instance, if somebody had done:</p>
+            </section>
+            <section id="section-2">
+                <p>So for instance, if somebody had done:</p>
 
 <pre><code class="hljs"><span class="hljs-comment"># </span>NOTE<span class="hljs-comment">: OLD STYLE CODE, DO NOT USE</span><span class="hljs-comment">
 </span><span class="hljs-function">open</span> <span class="hljs-type">*WAT</span>, &#39;<span class="hljs-string">-|</span>&#39;, &#39;<span class="hljs-string">echo exploited|</span>&#39;;
