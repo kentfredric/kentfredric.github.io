@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>http://kentfredric.github.io/blog/</id>
     <title>KENTNL&#39;s Blog</title>
-    <updated>2016-01-05T15:26:43Z</updated>
+    <updated>2016-01-05T15:26:57Z</updated>
     <link href="http://kentfredric.github.io/blog/index.atom" rel="self" />
     <link href="http://kentfredric.github.io/blog/" rel="alternate" />
     <generator version="0.064">Statocles</generator>
