@@ -46,7 +46,7 @@ And that means any code that happens to utilize that "execute arbitrary programs
 
     http://example.org/fake.cgi?rm -rf /|
 
-And maybe find enough magic spice to trigger the "be a command line and execute that" condition.
+And maybe find enough magic spice to trigger the ["be a command line and execute that" condition.](/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/)
 
 And this would clearly be bad.
 
