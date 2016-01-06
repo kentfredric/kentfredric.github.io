@@ -53,17 +53,11 @@ qq[<p class="footnote"><a id="footnote_${human_no}" href="#from_footnote_${human
     return join q[], @out;
 }
 
-sub code {
-    my ( $self, $args, $content ) = @_;
-    return "<pre><code class=hljs>$content</code></pre>";
-}
-
 sub register {
     my ( $self, $site ) = @_;
     $site->theme->helper( heading   => sub { $self->heading(@_) } );
     $site->theme->helper( footnote  => sub { $self->footnote(@_) } );
     $site->theme->helper( footnotes => sub { $self->footnotes(@_) } );
-    $site->theme->helper( code      => sub { $self->code(@_) } );
 }
 1;
 

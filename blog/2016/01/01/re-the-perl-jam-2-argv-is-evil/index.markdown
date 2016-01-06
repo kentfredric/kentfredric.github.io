@@ -17,7 +17,7 @@ community by filing a bug when he discovered it.
 Here is the most reduced code you can have that demonstrates the
 vulnerability in play.
 
-%= code highlight Perl => begin
+%= highlight Perl => begin
 use strict;
 use warnings;
 
@@ -44,7 +44,7 @@ shouldn't: It treats the string as a *description* of a filehandle.
 
 So for instance, if somebody had done:
 
-%= code highlight Perl => begin
+%= highlight Perl => begin
 # NOTE: OLD STYLE CODE, DO NOT USE
 open *WAT, '-|', 'echo exploited|';
 
@@ -55,7 +55,7 @@ while(<$filehandle>) {  }
 
 Perl behaves as if you'd written:
 
-%= code highlight Perl => begin
+%= highlight Perl => begin
 # NOTE: OLD STYLE CODE, DO NOT USE
 open *WAT, '-|', 'echo exploited|';
 
@@ -67,7 +67,7 @@ while(<WAT>) {  }
 In other Perl structures, this sort of transformation would be the kind of
 forbidden behaviour `strict` guards against:
 
-%= code highlight Perl => begin
+%= highlight Perl => begin
 use strict;
 use warnings;
 
@@ -92,7 +92,7 @@ But the special value `ARGV` gets additionally complicated because it is
 
 And that feature is implemented in terms of:
 
-%= code highlight Perl => begin
+%= highlight Perl => begin
 foreach my $file ( @ARGV ) {
     open my $fh, $file;
 }
@@ -100,7 +100,7 @@ foreach my $file ( @ARGV ) {
 
 And that invokes the 2-arg-open magic, which means
 
-%= code highlight Perl => begin
+%= highlight Perl => begin
 open my $fh, "echo hello |"
 % end
 
@@ -112,7 +112,7 @@ sense on the command line where you can trust the person who populated
 
 It allows you do to neat things like
 
-%= code highlight bash => begin
+%= highlight bash => begin
 # read all of stdin, then read a file when stdin is empty
 echo foo | perl ./script.pl \\
                     - \\
@@ -151,20 +151,20 @@ and the recommendation of 3-argument open has been standard fare in Perl Communi
 
 As the the risk implied by
 
-%= code highlight Perl => begin
+%= highlight Perl => begin
 while(<ARGV>) { }
 % end
 
 Is the same as the risk implied by
 
-%= code highlight Perl => begin
+%= highlight Perl => begin
 while(<>) { }
 % end
 
 We now have a feature since perl `5.22` that retains the ability to read files from `ARGV` without the risk
 of one of those files executing arbitrary code.
 
-%= code highlight Perl => begin
+%= highlight Perl => begin
 while(<<>>) { }
 % end
 
@@ -172,7 +172,7 @@ And this should be encouraged in production quality code instead of either `<>` 
 
 This fact is useless in our specific case of `<$VARIABLE>` mind, because
 
-%= code highlight Perl => begin
+%= highlight Perl => begin
 # invalid, parsed as <<"ARGV" >> where "ARGV" is a heredoc terminator
 while(<<ARGV>>)
 
@@ -193,7 +193,7 @@ Were it me, given the lethality of those features, I would be wanting to depreca
 which I believe is its primary usecase anyway, because it eliminates the need for multiple layers of quoting and lots
 of painful explicit calls to `open()`, which would grossly burden somebody who is simply trying to string together a short oneliner.
 
-%= code highlight bash => begin
+%= highlight bash => begin
 perl -e 'while(<>) { print $_ }' 'file_a.txt' 'gzcat file_b.txt|' '-'
 % end
 
@@ -201,14 +201,14 @@ This code without the magic of `<>` and `ARGV` gives you a significant amount of
 So much in fact, that simply thinking about what it would take made me give up even tempting to write one as an example in Perl, so instead,
 an equivalent in bash will have to suffice:
 
-%= code highlight bash => begin
+%= highlight bash => begin
 cat file_a.txt <( gzcat file_b.txt ) /dev/stdin
 % end
 
 Maybe we can develop a pragma that regulates what 2-arg `open` ( and its effective internals in ARGV ) are permitted to do?
 ie:
 
-%= code highlight Perl => begin
+%= highlight Perl => begin
 use Safe::Open2; # 2-arg-open assumes *all* arguments are filenames
 use Safe::Open2 qw/stdio/; # as with ^, but allows - based STDIO access
 use Safe::Open2 qw/exec stdio/; # allows pipe-exec and stdio

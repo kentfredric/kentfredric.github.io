@@ -23,12 +23,12 @@ And then any tainting-sensitive function calls can raise a fatal exception if th
 
 For instance, Take the following JSON file
 
-%=code highlight JavaScript => begin
+%= highlight JavaScript => begin
 { "DROP TABLES *": "DROP TABLES *" }
 %end
 
 Now, using the following script:
-%=code highlight Perl => begin
+%= highlight Perl => begin
 use strict;
 use warnings;
 use JSON::MaybeXS;
@@ -40,20 +40,20 @@ system("echo " . join q[], values %{$structure} );
 
 This example demonstrates that the JSON back-end faithfully preserved taintness
 of the external data, and the code fails as expected.
-%=code highlight bash => begin
+%= highlight bash => begin
 $ env -i perl -T /tmp/json.pl
 Insecure dependency in system while running with -T switch at /tmp/json.pl line 7.
 %end
 
 However, hash keys are inherently different:
-%=code highlight diff => begin
+%= highlight diff => begin
 - system("echo " . join q[], values %{$structure} );
 + system("echo " . join q[], keys   %{$structure} );
 %end
 
 And now we have a problem:
 
-%=code highlight bash => begin
+%= highlight bash => begin
 $ env -i perl -T /tmp/json.pl
 DROP TABLES blog page site.yml static theme
 %end
@@ -96,7 +96,7 @@ This would also cause a performance decrease for All Perl, even when *not* runni
 
 How do we want this to behave?
 
-%=code highlight Perl => begin
+%= highlight Perl => begin
 my $hash = {};
 $hash->{ taint("Hello") } = "World";
 $hash->{ "Hello" } = "Earth";
@@ -140,7 +140,7 @@ but lexically changes how hash-access OPs are compiled in its context.
 
 And it seems to me you could leverage such a thing to only apply to hash access calls on variables, as opposed to on GLOBs ( Package/Stashes )
 
-%=code highlight Perl => begin
+%= highlight Perl => begin
 use tainted::hashes;
 
 Package::foo::method(); # Uses native Hash Access ops.
