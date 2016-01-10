@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>http://kentfredric.github.io/blog/tag/the-perl-jam-2/</id>
     <title>KENTNL&#39;s Blog</title>
-    <updated>2016-01-05T18:21:26Z</updated>
+    <updated>2016-01-02T00:00:00Z</updated>
     <link href="http://kentfredric.github.io/blog/tag/the-perl-jam-2.atom" rel="self" />
     <link href="http://kentfredric.github.io/blog/tag/the-perl-jam-2/" rel="alternate" />
-    <generator version="0.064">Statocles</generator>
+    <generator version="0.066">Statocles</generator>
     <entry>
         <id>http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/</id>
         <title>Re: The Perl Jam 2: Hashes are Insecure</title>
@@ -171,7 +171,7 @@ much like parameters on the command line.</p>
 <pre><code>http://example.org/fake.cgi?rm -rf /|
 </code></pre>
 
-<p>And maybe find enough magic spice to trigger the &quot;be a command line and execute that&quot; condition.</p>
+<p>And maybe find enough magic spice to trigger the <a href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/">&quot;be a command line and execute that&quot; condition.</a></p>
 
 <p>And this would clearly be bad.</p>
 
