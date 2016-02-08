@@ -71,7 +71,7 @@ around tag_pages => sub {
 
   for my $tag ( keys %{$tagged_docs} ) {
     my (@tag_pages);
-    my $epath = join '/', $self->url_root, 'tag', $self->_tag_url($tag);
+    my $epath = join '/', $self->url_root, 'tag', $self->_tag_url($tag), '';
     for my $page (@pages) {
       next unless $page->path =~ /^\Q$epath\E/;
       push @tag_pages, $page;
