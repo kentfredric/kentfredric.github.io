@@ -65,6 +65,56 @@ around index => sub {
   return ( @pages, @feed_pages );
 };
 
+around tag_pages => sub {
+  my ( $orig, $self, $tagged_docs, @rest ) = @_;
+  my (@pages) = $self->$orig( $tagged_docs, @rest );
+
+  for my $tag ( keys %{$tagged_docs} ) {
+    my (@tag_pages);
+    my $epath = join '/', $self->url_root, 'tag', $self->_tag_url($tag);
+    for my $page (@pages) {
+      next unless $page->path =~ /^\Q$epath\E/;
+      push @tag_pages, $page;
+    }
+    next unless @tag_pages;
+    my ($index) = $tag_pages[0];    ## This seems really dodgy
+    my ( @feed_pages, @feed_links );
+    for my $feed ( sort keys %FULL_FEEDS ) {
+      my $tag_file = $self->_tag_url($tag) . '.fulltext.' . $feed;
+
+      my $page = Statocles::Page::List->new(
+        app      => $self,
+        pages    => $index->pages,
+        path     => join( "/", $self->url_root, 'tag', $tag_file ),
+        template => $self->site->theme->template(
+          blog => $FULL_FEEDS{$feed}{template}
+        ),
+        links => {
+          alternate => [
+            $self->link(
+              href  => $index->path,
+              title => $tag,
+              type  => $index->type,
+            ),
+          ],
+        },
+      );
+
+      push @feed_pages, $page;
+      push @feed_links,
+        $self->link(
+        text => $FULL_FEEDS{$feed}{text},
+        href => $page->path->stringify,
+        type => $page->type,
+        );
+    }
+    for my $page (@tag_pages) {
+      push @{ $page->_links->{feed} }, @feed_links;
+    }
+    push @pages, @feed_pages;
+  }
+  return @pages;
+};
 
 1;
 
