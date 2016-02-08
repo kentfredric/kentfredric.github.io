@@ -30,7 +30,7 @@ around index => sub {
   my (@feed_pages);
   my (@feed_links);
   for my $feed ( sort keys %FULL_FEEDS ) {
-    my $page = Statocles::Page::List->new(
+    my $feed_page = Statocles::Page::List->new(
       app   => $self,
       pages => $index->pages,
       path  => $self->url_root . '/fulltext.' . $feed,
@@ -46,21 +46,16 @@ around index => sub {
         ]
       }
     );
-    push @feed_pages, $page;
-    push @feed_links,
-      $self->link(
+    my $feed_link = $self->link(
       text => $FULL_FEEDS{$feed}{text},
-      href => $page->path->stringify,
-      type => $page->type,
-      );
-  }
-  for my $page (@pages) {
-    my $links = $page->_links;
-    next if not exists $links->{feed};
-    next if not defined $links->{feed};
-    next if 'ARRAY' ne ref $links->{feed};
-    next unless @{ $links->{feed} };
-    push @{ $links->{feed} }, @feed_links;
+      href => $feed_page->path->stringify,
+      type => $feed_page->type,
+    );
+    push @feed_pages, $feed_page;
+    for my $page (@pages) {
+      next unless scalar $page->links('feed');
+      $page->links( 'feed' => $feed_link );
+    }
   }
   return ( @pages, @feed_pages );
 };
@@ -82,7 +77,7 @@ around tag_pages => sub {
     for my $feed ( sort keys %FULL_FEEDS ) {
       my $tag_file = $self->_tag_url($tag) . '.fulltext.' . $feed;
 
-      my $page = Statocles::Page::List->new(
+      my $feed_page = Statocles::Page::List->new(
         app      => $self,
         pages    => $index->pages,
         path     => join( "/", $self->url_root, 'tag', $tag_file ),
@@ -100,18 +95,17 @@ around tag_pages => sub {
         },
       );
 
-      push @feed_pages, $page;
-      push @feed_links,
-        $self->link(
+      push @feed_pages, $feed_page;
+      my $feed_link = $self->link(
         text => $FULL_FEEDS{$feed}{text},
-        href => $page->path->stringify,
-        type => $page->type,
-        );
-    }
-    for my $page (@tag_pages) {
-      push @{ $page->_links->{feed} }, @feed_links;
-    }
-    push @pages, @feed_pages;
+        href => $feed_page->path->stringify,
+        type => $feed_page->type,
+      );
+      for my $page (@tag_pages) {
+        $page->links( feed => $feed_link );
+      }
+   }
+   push @pages, @feed_pages;
   }
   return @pages;
 };
