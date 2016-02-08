@@ -1,0 +1,548 @@
+<?xml version="1.0"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>KENTNL&#39;s Blog</title>
+        <link>http://kentfredric.github.io/blog/tag/perl/</link>
+        <atom:link href="http://kentfredric.github.io/blog/tag/perl.fulltext.rss" rel="self" type="application/rss+xml" />
+        <description>Blog feed of KENTNL&#39;s Blog</description>
+        <generator>Statocles 0.067</generator>
+        <item>
+            <title>Re: The Perl Jam 2: Hashes are Insecure</title>
+            <link>http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/</link>
+            <guid>http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/</guid>
+            <description><![CDATA[
+                <p>This is part 3 in a <a href="http://kentfredric.github.io/blog/tag/the-perl-jam-2">series</a> of responses to
+<a href="https://www.youtube.com/watch?v=eH_u3C2WwQ0">Netanel Rubin&#39;s Presentation: The Perl Jam 2</a>,
+for reasons explained in <a href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/">Part 1</a></p>
+
+<p>In his original presentation, Netanel over focused on the assumption that we treat
+Hashes and other arbitrary data structures as safe by default.</p>
+
+<p>This is not really true, however, when watching him talk about it, I realised
+he was right in a sense, just ... not how he imagined.</p>
+
+<h2 id="hash_keys_are_a_potential_security_risk_">Hash Keys are a Potential Security Risk.<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#hash_keys_are_a_potential_security_risk_">⚓</a></h2>
+
+<p>Under taint mode, strings from external sources are marked &quot;tainted&quot; until somebody manually untaints them.</p>
+
+<p>And then any tainting-sensitive function calls can raise a fatal exception if they are passed sensitive data.</p>
+
+<p>For instance, Take the following JSON file</p>
+
+<pre><code class="hljs">{ <span class="hljs-string">&quot;DROP TABLES *&quot;</span>: <span class="hljs-string">&quot;DROP TABLES *&quot;</span> }
+</code></pre>
+
+<p>Now, using the following script:</p>
+
+<pre><code class="hljs"><span class="hljs-keyword">use</span> <span class="hljs-keyword">strict</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-keyword">warnings</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-function">JSON::MaybeXS</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-function">Path::Tiny</span> qw( path );
+
+<span class="hljs-keyword">my</span> <span class="hljs-type">$structure</span> = decode_json(path(&#39;<span class="hljs-string">/tmp/evil.json</span>&#39;)-&gt;slurp_raw);
+<span class="hljs-function">system</span>(&quot;<span class="hljs-string">echo </span>&quot; . <span class="hljs-function">join</span> q[], <span class="hljs-function">values</span> <span class="hljs-type">%</span>{<span class="hljs-type">$structure</span>} );
+</code></pre>
+
+<p>This example demonstrates that the JSON back-end faithfully preserved taintness
+of the external data, and the code fails as expected.</p>
+
+<pre><code class="hljs">$ env -i perl -T /tmp/json.pl
+Insecure dependency <span class="hljs-keyword">in</span> system <span class="hljs-keyword">while</span> running with -T switch at /tmp/json.pl line 7.
+</code></pre>
+
+<p>However, hash keys are inherently different:</p>
+
+<pre><code class="hljs">- system(&quot;echo &quot; . join q[], values %{$structure} );
+<span class="hljs-string">+ system(&quot;echo &quot; . join q[], keys   %{$structure} );</span><span class="hljs-string">
+</span></code></pre>
+
+<p>And now we have a problem:</p>
+
+<pre><code class="hljs">$ env -i perl -T /tmp/json.pl
+DROP TABLES blog page site.yml static theme
+</code></pre>
+
+<hr>
+
+<p>Now this is not necessarily a problem if you apply clean code practices.</p>
+
+<p>As long as you make sure everything the user gave you is well sanitized, and you use Bound-Parameter style value passing to literally
+every API you use, then you might be OK.</p>
+
+<p>But Taint mode basically exists as a fall-back defense to guard against developers failing to vet all the inputs, so that if
+you missed something, Perl still has an opportunity to save the day.</p>
+
+<p>But people can also be needlessly lazy and rely entirely on Perl to save the day, when Perl is not psychic.</p>
+
+<p>And worse, you can be using Taint mode, but you could either be unintentionally untainting sensitive data, or intentionally untaining data
+but untainting it incorrectly, leaving exploitable code through to your system.</p>
+
+<p>Here, &quot;Value spent time in a Hash Key&quot; transparently untaining data can leverage itself to be a weak point.</p>
+
+<h2 id="how_do_we_fix_it">How Do We Fix It<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#how_do_we_fix_it">⚓</a></h2>
+
+<h3 id="considerations">Considerations<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#considerations">⚓</a></h3>
+
+<h4 id="performance">Performance<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#performance">⚓</a></h4>
+
+<p>There&#39;s a big blocker inhibiting our ability to make Hash Keys retain taintedness.</p>
+
+<p>And its based on how Hash data structures underly a significant proportion of the Perl Language.</p>
+
+<p>Not only do Anonymous Hash References use Hashes as their underlying model, but so does the entire <code>package Foo::</code> namespace hierarchy,
+which includes the symbol tables that methods and global variables are stored in.</p>
+
+<p>Which means any changes we make to the Hash Data structure to preserve taint bits will incur a significant performance overhead under Taint Mode.</p>
+
+<p>This would also cause a performance decrease for All Perl, even when <em>not</em> running in Taint Mode.</p>
+
+<h4 id="implementation_challenges">Implementation Challenges<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#implementation_challenges">⚓</a></h4>
+
+<p>How do we want this to behave?</p>
+
+<pre><code class="hljs"><span class="hljs-keyword">my</span> <span class="hljs-type">$hash</span> = {};
+<span class="hljs-type">$hash</span>-&gt;{ taint(&quot;<span class="hljs-string">Hello</span>&quot;) } = &quot;<span class="hljs-string">World</span>&quot;;
+<span class="hljs-type">$hash</span>-&gt;{ &quot;<span class="hljs-string">Hello</span>&quot; } = &quot;<span class="hljs-string">Earth</span>&quot;;
+
+<span class="hljs-comment"># Is $value tainted or not here?</span><span class="hljs-comment">
+</span><span class="hljs-keyword">my</span> (<span class="hljs-type">$value</span>,) = <span class="hljs-function">keys</span> <span class="hljs-type">%</span>{<span class="hljs-type">$hash</span>};
+<span class="hljs-comment"># How many keys are there exactly anyway, should we consider a tainted key</span><span class="hljs-comment">
+</span><span class="hljs-comment"># and its untainted companion to be identical or different keys?</span><span class="hljs-comment">
+</span><span class="hljs-keyword">my</span> <span class="hljs-type">$n_keys</span> = <span class="hljs-function">scalar</span> <span class="hljs-function">keys</span> <span class="hljs-type">%</span>{<span class="hljs-type">$hash</span>};
+</code></pre>
+
+<h4 id="backwards_compatibility">Backwards Compatibility<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#backwards_compatibility">⚓</a></h4>
+
+<p>Because &quot;Hash-Keys-Remove-Taint&quot; has been a thing for so long, there is very likely code in production
+that is intentionally relying on this behaviour.</p>
+
+<p>How do we fix this without making a lot of existing and correct code suddenly become broken?</p>
+
+<h3 id="suggestions">Suggestions<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#suggestions">⚓</a></h3>
+
+<h4 id="tainted_hashes">Tainted Hashes<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#tainted_hashes">⚓</a></h4>
+
+<p>I would probably propose an option that allows taintedness to become a property of a hash,
+instead of merely a property of the strings contained in that hash.</p>
+
+<p>Tools like JSON decoders would explicitly mark any hash constructed from tainted data to be implicitly
+tainted, and then hash internals don&#39;t care about taintedness on a per-key/per-value level, and just re-tag
+everything that came out of a tainted hash ( either by calls to keys or values ) became tainted by default.</p>
+
+<p>But sadly, this doesn&#39;t mitigate the potential performance negatives of adding the feature, because
+there still has to be an &quot;Am I tainted? -&gt; Return tainted value&quot; stage, and that code path would still
+have to be there for all the package/stash lookups.</p>
+
+<p>You could probably bodge together something that approximates this with <code>tie</code>, but <code>tie</code> is almost always
+more poison than cure.</p>
+
+<h4 id="lexically_applied_hash_tainting">Lexically Applied Hash Tainting<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#lexically_applied_hash_tainting">⚓</a></h4>
+
+<p>It seems possible to me that a pragma could be developed that doesn&#39;t affect the handling of Hashes intrinsically,
+but lexically changes how hash-access OPs are compiled in its context.</p>
+
+<p>And it seems to me you could leverage such a thing to only apply to hash access calls on variables, as opposed to on GLOBs ( Package/Stashes )</p>
+
+<pre><code class="hljs"><span class="hljs-keyword">use</span> t<span class="hljs-function">ainted::hashes</span>;
+
+<span class="hljs-keyword">Package</span>::<span class="hljs-function">foo::method</span>(); <span class="hljs-comment"># Uses native Hash Access ops.</span><span class="hljs-comment">
+</span>
+<span class="hljs-type">$ref</span>-&gt;{key} <span class="hljs-comment"># uses taint safe ops if tainting is enabled.</span><span class="hljs-comment">
+</span></code></pre>
+
+<p>You&#39;d need to have some sort of semantics in play so you can handle the taintedness of hashes declared in other contexts,
+for instance, you might assume any hash that hasn&#39;t been seen by a tainted::hashes pragma and hasn&#39;t been marked &quot;Safe&quot;
+is inherently &quot;Unsafe&quot;.</p>
+
+<p>And then you could potentially &quot;turn on&quot; that feature by default in some future perl release under tainting,
+or at least, turn it on as a feature with <code>use 5.${FUTURE}</code>.</p>
+
+<h4 id="call_for_suggestions">Call For Suggestions<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#call_for_suggestions">⚓</a></h4>
+
+<p>Clearly neither of those solutions are entirely elegant and may have serious road stops. And I honestly know almost
+nothing about XS when it comes to the implementation details in Perl Guts to know what is possible and what isn&#39;t.</p>
+
+<p>So if any readers out there have some good ideas, there&#39;s a P5P who&#39;s accepting patches if they seem reasonable and the technical
+costs are affordable.</p>
+
+<h2 id="comments">Comments<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#comments">⚓</a></h2>
+
+<p>Please direct any feedback or corrections <a href="https://www.reddit.com/r/perl/comments/3zemb5/re_the_perl_jam_2_hashes_are_insecure/">to the Reddit thread</a>. Alternatively, message me on irc:</p>
+
+<ul>
+<li>irc.perl.org u:kentnl</li>
+<li>irc.freenode.org u:kent\n</li>
+</ul>
+
+<p>Or if you want, you can <a href="https://github.com/kentfredric/kentfredric.github.io/pulls">patch the blog yourself</a>
+or <a href="https://github.com/kentfredric/kentfredric.github.io/issues">file a bug on it</a></p>
+
+                    <p><a href="http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/#section-2">Continue reading...</a></p>
+                <p>Tags:
+                    <a href="http://kentfredric.github.io/blog/tag/perl/">perl</a>
+                    <a href="http://kentfredric.github.io/blog/tag/the-perl-jam-2/">the perl jam 2</a>
+                </p>
+            ]]></description>
+            <pubDate>
+                Sat, 02 Jan 2016 00:00:00 +0000
+            </pubDate>
+        </item>
+        <item>
+            <title>Re: The Perl Jam 2: &lt;&quot;ARGV&quot;&gt; is evil</title>
+            <link>http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/</link>
+            <guid>http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/</guid>
+            <description><![CDATA[
+                <p>This is part 2 in a <a href="http://kentfredric.github.io/blog/tag/the-perl-jam-2">series</a> of responses to
+<a href="https://www.youtube.com/watch?v=eH_u3C2WwQ0">Netanel Rubin&#39;s Presentation: The Perl Jam 2</a>,
+for reasons explained in <a href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/">Part 1</a></p>
+
+<p>This is on the list of things that Netanel would have best served the Perl
+community by filing a bug when he discovered it.</p>
+
+<h2 id="_argv_is_evil"><code>&lt;&quot;ARGV&quot;&gt;</code> is evil<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#_argv_is_evil">⚓</a></h2>
+
+<p>Here is the most reduced code you can have that demonstrates the
+vulnerability in play.</p>
+
+<pre><code class="hljs"><span class="hljs-keyword">use</span> <span class="hljs-keyword">strict</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-keyword">warnings</span>;
+
+<span class="hljs-comment"># Pretend this came in through a CGI Request Paramete</span><span class="hljs-comment">
+</span><span class="hljs-variable">@ARGV</span>=( &#39;<span class="hljs-string">echo exploited|</span>&#39; );
+
+<span class="hljs-comment"># This function should return a filehandle, but the user did something</span><span class="hljs-comment">
+</span><span class="hljs-comment"># to trick magical_function to return the string &quot;ARGV&quot;</span><span class="hljs-comment">
+</span>
+<span class="hljs-keyword">my</span> <span class="hljs-type">$filehandle</span> = magical_function();
+
+<span class="hljs-comment"># TRAP</span><span class="hljs-comment">
+</span><span class="hljs-keyword">while</span> (&lt;<span class="hljs-type">$filehandle</span>&gt;) {
+  <span class="hljs-function">print</span> <span class="hljs-variable">$_</span>;
+}
+</code></pre>
+
+<p>As long as <code>$filehandle</code> is in fact a FileHandle, nothing weird happens.</p>
+
+<p>However, when $filehandle is a <em>string</em>, Perl does something it typically
+shouldn&#39;t: It treats the string as a <em>description</em> of a filehandle.</p>
+
+<hr>
+
+<p>So for instance, if somebody had done:</p>
+
+<pre><code class="hljs"><span class="hljs-comment"># </span>NOTE<span class="hljs-comment">: OLD STYLE CODE, DO NOT USE</span><span class="hljs-comment">
+</span><span class="hljs-function">open</span> <span class="hljs-type">*WAT</span>, &#39;<span class="hljs-string">-|</span>&#39;, &#39;<span class="hljs-string">echo exploited|</span>&#39;;
+
+<span class="hljs-keyword">my</span> <span class="hljs-type">$filehandle</span> = &quot;<span class="hljs-string">WAT</span>&quot;;
+
+<span class="hljs-keyword">while</span>(&lt;<span class="hljs-type">$filehandle</span>&gt;) {  }
+</code></pre>
+
+<p>Perl behaves as if you&#39;d written:</p>
+
+<pre><code class="hljs"><span class="hljs-comment"># </span>NOTE<span class="hljs-comment">: OLD STYLE CODE, DO NOT USE</span><span class="hljs-comment">
+</span><span class="hljs-function">open</span> <span class="hljs-type">*WAT</span>, &#39;<span class="hljs-string">-|</span>&#39;, &#39;<span class="hljs-string">echo exploited|</span>&#39;;
+
+<span class="hljs-keyword">my</span> <span class="hljs-type">$filehandle</span> = &quot;<span class="hljs-string">WAT</span>&quot;;
+
+<span class="hljs-keyword">while</span>(<span class="hljs-keyword">&lt;WAT&gt;</span>) {  }
+</code></pre>
+
+<p>In other Perl structures, this sort of transformation would be the kind of
+forbidden behaviour <code>strict</code> guards against:</p>
+
+<pre><code class="hljs"><span class="hljs-keyword">use</span> <span class="hljs-keyword">strict</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-keyword">warnings</span>;
+
+<span class="hljs-function">open</span> <span class="hljs-type">*WAT</span>, &#39;<span class="hljs-string">|-</span>&#39;, &#39;<span class="hljs-string">cat</span>&#39;;
+<span class="hljs-keyword">my</span> <span class="hljs-type">$handle</span> = &#39;<span class="hljs-string">WAT</span>&#39;;
+
+<span class="hljs-function">print</span> { <span class="hljs-type">$handle</span> } &quot;<span class="hljs-string">Hi there</span>&quot;;
+<span class="hljs-comment"># Can&#39;t use string (&quot;WAT&quot;) as a symbol ref while &quot;strict refs&quot; in use</span><span class="hljs-comment">
+</span></code></pre>
+
+<p>But the special value <code>ARGV</code> gets additionally complicated because it is
+&quot;Magic&quot; to <code>&lt;&gt;</code></p>
+
+<blockquote>
+<pre><code>ARGV    The special filehandle that iterates over command-line filenames
+        in @ARGV. Usually written as the null filehandle in the angle
+        operator &quot;&lt;&gt;&quot;. Note that currently &quot;ARGV&quot; only has its magical
+        effect within the &quot;&lt;&gt;&quot; operator; elsewhere it is just a plain
+        filehandle corresponding to the last file opened by &quot;&lt;&gt;&quot;. In
+        particular, passing &quot;\*ARGV&quot; as a parameter to a function that
+        expects a filehandle may not cause your function to automatically
+        read the contents of all the files in @ARGV.
+</code></pre>
+</blockquote>
+
+<p>And that feature is implemented in terms of:</p>
+
+<pre><code class="hljs"><span class="hljs-keyword">foreach</span> <span class="hljs-keyword">my</span> <span class="hljs-type">$file</span> ( <span class="hljs-variable">@ARGV</span> ) {
+    <span class="hljs-function">open</span> <span class="hljs-keyword">my</span> <span class="hljs-type">$fh</span>, <span class="hljs-type">$file</span>;
+}
+</code></pre>
+
+<p>And that invokes the 2-arg-open magic, which means</p>
+
+<pre><code class="hljs"><span class="hljs-function">open</span> <span class="hljs-keyword">my</span> <span class="hljs-type">$fh</span>, &quot;<span class="hljs-string">echo hello |</span>&quot;
+</code></pre>
+
+<p>Excutes <code>echo hello</code> and emits its output into the filehandle <code>$fh</code>.</p>
+
+<p>This specific feature is just one of those conveniences that makes a lot of
+sense on the command line where you can trust the person who populated
+<code>@ARGV</code> is also you.</p>
+
+<p>It allows you do to neat things like</p>
+
+<pre><code class="hljs"><span class="hljs-comment"># read all of stdin, then read a file when stdin is empty</span><span class="hljs-comment">
+</span><span class="hljs-built-in">echo</span> foo <span class="hljs-keyword">|</span> perl ./script.pl \
+                    - \
+                    ./source_file_2
+
+<span class="hljs-comment"># read all of file one, then all of file 2</span><span class="hljs-comment">
+</span>perl ./script.pl \
+          ./sourcefile_1 \
+          ./source_file_2
+
+<span class="hljs-comment"># read all of files 1 and 2, and then read source file 3 while</span><span class="hljs-comment">
+</span><span class="hljs-comment"># decompressing it</span><span class="hljs-comment">
+</span>perl ./script.pl \
+      ./source_file_1 \
+      ./source_file_2 \
+      <span class="hljs-string">&#39;gzcat ./source_file_3|&#39;</span>
+</code></pre>
+
+<p>But this feature makes <strong>NO</strong> sense when you&#39;re on the internet using CGI, and the person passing your command line arguments is some person with an HTTP Client.</p>
+
+<p>So on the Web using CGI, <code>strict</code> not doing its job escalates the problem to a security hole.</p>
+
+<h2 id="how_do_we_fix_it_">How do we fix it?<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#how_do_we_fix_it_">⚓</a></h2>
+
+<h3 id="locking_it_up_with_strictures">Locking it up with strictures<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#locking_it_up_with_strictures">⚓</a></h3>
+
+<p><code>use strict</code> really aught to imply <code>strict</code> here, and <code>&lt;&quot;ANYTHING&quot;&gt;</code> should subsequently be a strictures error. Adding that change however risks
+breaking existing code with real world usecases, so a painful deprecation cycle might be necessary somehow.</p>
+
+<p>Either way, I saw some hackers looking in to fixing this on <code>irc.perl.org#p5p</code> within minutes of it being presented.</p>
+
+<h3 id="encouragement_of_using_instead_of_">Encouragement of using <code>&lt;&lt;&gt;&gt;</code> instead of <code>&lt;&gt;</code><a class="toplink" href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#encouragement_of_using_instead_of_">⚓</a></h3>
+
+<p>Perl has recognised the potential for risks associated with 2-argument open for a while,
+and the recommendation of 3-argument open has been standard fare in Perl Communities for a very long time now.</p>
+
+<p>As the the risk implied by</p>
+
+<pre><code class="hljs"><span class="hljs-keyword">while</span>(<span class="hljs-keyword">&lt;ARGV&gt;</span>) { }
+</code></pre>
+
+<p>Is the same as the risk implied by</p>
+
+<pre><code class="hljs"><span class="hljs-keyword">while</span>(&lt;&gt;) { }
+</code></pre>
+
+<p>We now have a feature since perl <code>5.22</code> that retains the ability to read files from <code>ARGV</code> without the risk
+of one of those files executing arbitrary code.</p>
+
+<pre><code class="hljs"><span class="hljs-keyword">while</span>(&lt;&lt;&gt;&gt;) { }
+</code></pre>
+
+<p>And this should be encouraged in production quality code instead of either <code>&lt;&gt;</code> or <code>&lt;ARGV&gt;</code>.</p>
+
+<p>This fact is useless in our specific case of <code>&lt;$VARIABLE&gt;</code> mind, because</p>
+
+<pre><code class="hljs"><span class="hljs-comment"># invalid, parsed as &lt;&lt;&quot;ARGV&quot; &gt;&gt; where &quot;ARGV&quot; is a heredoc terminator</span><span class="hljs-comment">
+</span><span class="hljs-keyword">while</span>(&lt;&lt;<span class="hljs-keyword">ARGV</span><span class="hljs-string">&gt;&gt;)</span><span class="hljs-string">
+</span><span class="hljs-string">
+</span><span class="hljs-string"># invalid, parsed as &lt;&lt;&quot;&quot; </span><span class="hljs-type">$filename</span><span class="hljs-string">&gt;&gt; where &quot;&quot; is a heredoc terminator</span><span class="hljs-string">
+</span><span class="hljs-string">while(&lt;&lt;</span><span class="hljs-type">$filehandle</span><span class="hljs-string">&gt;&gt;)</span><span class="hljs-string">
+</span></code></pre>
+
+<p>But its worth keeping in consideration.</p>
+
+<h3 id="locking_up_the_argv_iterator_">Locking up the <code>ARGV</code> iterator.<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#locking_up_the_argv_iterator_">⚓</a></h3>
+
+<p>The deeper question is wether or not the ARGV iterator is something that should be deemed &quot;Sane&quot; in 2015.
+I&#39;ve clearly demonstrate it <em>can</em> be useful, but its also easy to demonstrate how it <em>can</em> pose a security
+risk in the event anyone is foolish enough to use <code>&lt;&gt;</code> or <code>&lt;ARGV&gt;</code> without fully realising the consequences.
+And this can be hard to even realise is a problem in a code security review.</p>
+
+<p>Were it me, given the lethality of those features, I would be wanting to deprecate both of those outside <code>perl -e</code>,
+which I believe is its primary usecase anyway, because it eliminates the need for multiple layers of quoting and lots
+of painful explicit calls to <code>open()</code>, which would grossly burden somebody who is simply trying to string together a short oneliner.</p>
+
+<pre><code class="hljs">perl -e <span class="hljs-string">&#39;while(&lt;&gt;) { print $_ }&#39;</span> <span class="hljs-string">&#39;file_a.txt&#39;</span> <span class="hljs-string">&#39;gzcat file_b.txt|&#39;</span> <span class="hljs-string">&#39;-&#39;</span>
+</code></pre>
+
+<p>This code without the magic of <code>&lt;&gt;</code> and <code>ARGV</code> gives you a significant amount of code to write.
+So much in fact, that simply thinking about what it would take made me give up even tempting to write one as an example in Perl, so instead,
+an equivalent in bash will have to suffice:</p>
+
+<pre><code class="hljs">cat file_a.txt &lt;( gzcat file_b.txt ) /dev/stdin
+</code></pre>
+
+<p>Maybe we can develop a pragma that regulates what 2-arg <code>open</code> ( and its effective internals in ARGV ) are permitted to do?
+ie:</p>
+
+<pre><code class="hljs"><span class="hljs-keyword">use</span> <span class="hljs-function">Safe::Open2</span>; <span class="hljs-comment"># 2-arg-open assumes *all* arguments are filenames</span><span class="hljs-comment">
+</span><span class="hljs-keyword">use</span> <span class="hljs-function">Safe::Open2</span> qw/stdio/; <span class="hljs-comment"># as with ^, but allows - based STDIO access</span><span class="hljs-comment">
+</span><span class="hljs-keyword">use</span> <span class="hljs-function">Safe::Open2</span> qw/exec stdio/; <span class="hljs-comment"># allows pipe-exec and stdio</span><span class="hljs-comment">
+</span></code></pre>
+
+<p>I don&#39;t honestly know, and its messy, becuase you can&#39;t really afford to turn it on/off on a per-module basis, because the security
+risk has global implications regardless of where you write it, as its fundementally dealing with the gateway perl uses to interact with the rest
+of the operating system.</p>
+
+<p>So something with only lexical effect would be still born, but something with global effect could cause spooky action at a distance,
+because <code>ARGV</code> is implicitly global in nature, and unresolvably so.</p>
+
+<p>But either way</p>
+
+<ul>
+<li>It makes sense to have this feature when you <strong>know</strong> you&#39;re working in a command line directly in a secure environement</li>
+<li>It makes much less sense to a have this feature when you&#39;re not intending to work with the command line, or you&#39;re dealing with mixed environment security</li>
+</ul>
+
+<h2 id="comments">Comments<a class="toplink" href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#comments">⚓</a></h2>
+
+<p>Please direct any feedback or corrections <a href="https://www.reddit.com/r/perl/comments/3yzkjq/re_the_perl_jam_2_argv_is_evil/">to the Reddit thread</a>. Alternatively, message me on irc:</p>
+
+<ul>
+<li>irc.perl.org u:kentnl</li>
+<li>irc.freenode.org u:kent\n</li>
+</ul>
+
+<p>Or if you want, you can <a href="https://github.com/kentfredric/kentfredric.github.io/pulls">patch the blog yourself</a>
+or <a href="https://github.com/kentfredric/kentfredric.github.io/issues">file a bug on it</a></p>
+
+                    <p><a href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/#section-2">Continue reading...</a></p>
+                <p>Tags:
+                    <a href="http://kentfredric.github.io/blog/tag/perl/">perl</a>
+                    <a href="http://kentfredric.github.io/blog/tag/the-perl-jam-2/">the perl jam 2</a>
+                </p>
+            ]]></description>
+            <pubDate>
+                Fri, 01 Jan 2016 00:00:00 +0000
+            </pubDate>
+        </item>
+        <item>
+            <title>Re: The Perl Jam 2: CGI Sucks</title>
+            <link>http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/</link>
+            <guid>http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/</guid>
+            <description><![CDATA[
+                <p>I&#39;m going to be posting a <a href="http://kentfredric.github.io/blog/tag/the-perl-jam-2">series</a> of entries in response to <a href="https://www.youtube.com/watch?v=eH_u3C2WwQ0">Netanel Rubin&#39;s Presentation: The Perl Jam 2</a>, and this is the first of such entries.</p>
+
+<p>As a whole, I felt he grossly miss-characterised Perl and its community, and made a few glaring errors in his presentation and a few leaps of logic.</p>
+
+<p>Amongst his talk, he covered a handful of Real Bugs, but his presentation made it difficult to realise what they were objectively,
+and his hyperbolic and rhetoric technique served not to educate, not to correct, but to mock.</p>
+
+<p>I feel many of his criticisms would have been better addressed as actual bug reports, not a presentation conveying how software has bugs, and that with better clarity
+and less rhetorical devices, the important parts of his presentation could have been covered in 5 minutes.</p>
+
+<p>So this is an attempt at clarifying the mistakes in the presentation, and serve as a more objective response where we can unpack the relevant parts,
+fix the actual problems, and educate our way past the cultural issues that lead people to make bad choices.</p>
+
+<p>I will of course go into far more detail than is strictly necessary.</p>
+
+<h2 id="cgi_sucks">CGI Sucks<a class="toplink" href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#cgi_sucks">⚓</a></h2>
+
+<h3>And its Documented that Nobody should use it</h3>
+
+<p>Netanel did not identify this quirk as such, but it underlies a significant chunk of his presentation.</p>
+
+<p>Both <code>CGI.pm</code> and the CGI protocol imply serious limitations on the security and performance of your Web Application,
+and has been recommended against by everyone worth listening to, and is even documented as such
+<a href="https://metacpan.org/pod/release/LEEJO/CGI-4.25/lib/CGI.pod#CGI.pm-HAS-BEEN-REMOVED-FROM-THE-PERL-CORE"><strong>IN CGI.pm itself</strong></a></p>
+
+<blockquote>
+  <p>CGI.pm is no longer considered good practice for developing web applications, including quick prototyping and small web scripts.
+  There are far better, cleaner, quicker, easier, safer, more scalable, more extensible, more modern alternatives available at this point in time.</p>
+</blockquote>
+
+<p>The CGI protocol significantly blurs the lines between the Command Line interface, and the Web, in ways that prove to be detrimental,
+and can serve as an amplifier for bugs and security risks.</p>
+
+<p>One of the attacks he demonstrates relies heavily on a behaviour in Perl that is deemed useful for command line programs: The ability
+for the caller ( that is, the user of the command line program ), to specify, by way of arguments, names of arbitrary programs to execute to retrieve their output.</p>
+
+<p>This turns out to be a grave trap in a Web context, as HTTP <code>GET</code> Request parameters are passed to the CGI application as parameters to <code>@ARGV</code>,
+much like parameters on the command line.</p>
+
+<p>And that means any code that happens to utilize that &quot;execute arbitrary programs based on arguments in <code>@ARGV</code>&quot; path
+( either by intent, or by way of exploiting a bug ) is simply waiting for the day when some user on the internet can forge a request such as:</p>
+
+<pre><code>http://example.org/fake.cgi?rm -rf /|
+</code></pre>
+
+<p>And maybe find enough magic spice to trigger the <a href="http://kentfredric.github.io/blog/2016/01/01/re-the-perl-jam-2-argv-is-evil/">&quot;be a command line and execute that&quot; condition.</a></p>
+
+<p>And this would clearly be bad.</p>
+
+<p>But this risk exists because of the Command-Line-as-a-Web-Protocol design flaw.</p>
+
+<hr>
+
+<h2 id="how_do_we_fix_it_">How do we fix it?<a class="toplink" href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#how_do_we_fix_it_">⚓</a></h2>
+
+<h3 id="kill_cgi">Kill CGI<a class="toplink" href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#kill_cgi">⚓</a></h3>
+
+<p>We&#39;ve been trying as a community to kill its use. But it still flourishes in many ways.</p>
+
+<p>Every time you talk to the community, there will be somebody who will tell you not to use it.</p>
+
+<p>Its documentation says not to use it.</p>
+
+<p>We removed it from Perl already to discourage its use.</p>
+
+<p>The only thing we can do here is be more vocal about how bad it is, and how nobody should use it.</p>
+
+<p>Its had its time, and that time is long past. You should expect it to bite you.</p>
+
+<p>But its not a good justification to say &quot;Perl is Bad&quot; because people refuse to stop using bad software written in it,
+despite the attempts of the community of that language trying to kill it.</p>
+
+<h3 id="use_psgi_instead">Use PSGI Instead<a class="toplink" href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#use_psgi_instead">⚓</a></h3>
+
+<p>People should be strongly encouraged to <a href="http://shadow.cat/blog/matt-s-trout/mstpan-1/">use any other standardized recognised Framework</a>, especially ones that are implemented
+in terms of <a href="https://metacpan.org/pod/distribution/PSGI/PSGI.pod#SPECIFICATION">PSGI</a> and have the option of running
+on <a href="https://metacpan.org/pod/Plack">Plack</a> or any other <code>PSGI</code> compatible server.</p>
+
+<h3 id="psgi_server_in_core_">PSGI Server in Core?<a class="toplink" href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#psgi_server_in_core_">⚓</a></h3>
+
+<p>Perhaps we need to write a minimal subset of <code>Plack</code> and consider shipping it with Perl to encourage the use of <code>PSGI</code>.</p>
+
+<p>This option is naturally contentious, because <code>Perl</code> very much eschews the &quot;batteries included&quot; mentality, and there are serious
+consequences that occur when Perl includes too much software in itself, such as Linux vendors deeming those components not necessary
+and making them not part of the base Perl installation, invalidating the whole point of them being there in the first place,
+and adding the complications that come when users try to use things that their language documentation says should be there, but isn&#39;t.</p>
+
+<p>But given how long <code>CGI.pm</code> lived in core, and given how there&#39;s a substantial amount of its use due in part to that fact, we may
+need to consider incorporating competition to offset that problem.</p>
+
+<h2 id="comments">Comments<a class="toplink" href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#top">^</a><a class="permalink" href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#comments">⚓</a></h2>
+
+<p>Please direct any feedback or corrections <a href="https://www.reddit.com/r/perl/comments/3yzkby/re_the_perl_jam_2_cgi_sucks/">to the Reddit thread</a>. Alternatively, message me on irc:</p>
+
+<ul>
+<li>irc.perl.org u:kentnl</li>
+<li>irc.freenode.org u:kent\n</li>
+</ul>
+
+<p>Or if you want, you can <a href="https://github.com/kentfredric/kentfredric.github.io/pulls">patch the blog yourself</a>
+or <a href="https://github.com/kentfredric/kentfredric.github.io/issues">file a bug on it</a></p>
+
+                    <p><a href="http://kentfredric.github.io/blog/2015/12/31/re-the-perl-jam-2-cgi-sucks/#section-2">Continue reading...</a></p>
+                <p>Tags:
+                    <a href="http://kentfredric.github.io/blog/tag/perl/">perl</a>
+                    <a href="http://kentfredric.github.io/blog/tag/the-perl-jam-2/">the perl jam 2</a>
+                </p>
+            ]]></description>
+            <pubDate>
+                Thu, 31 Dec 2015 00:00:00 +0000
+            </pubDate>
+        </item>
+    </channel>
+</rss>
+
