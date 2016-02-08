@@ -135,6 +135,7 @@ blog_app:
     args:
         url_root: '/blog'
         store: 'blog'
+        page_size: 10
 
 # page_app: These are the settings for the page application.
 page_app:
