@@ -132,6 +132,7 @@ deploy:
 # blog_app: These are the settings for the blog application.
 blog_app:
     class: 'Statocles::App::Blog'
+    with: 'KENTNL::Feeds::FullText'
     args:
         url_root: '/blog'
         store: 'blog'
