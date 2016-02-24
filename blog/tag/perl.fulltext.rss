@@ -5,7 +5,7 @@
         <link>http://kentfredric.github.io/blog/tag/perl/</link>
         <atom:link href="http://kentfredric.github.io/blog/tag/perl.fulltext.rss" rel="self" type="application/rss+xml" />
         <description>Blog feed of KENTNL&#39;s Blog</description>
-        <generator>Statocles 0.067</generator>
+        <generator>Statocles 0.070</generator>
         <item>
             <title>Re: The Perl Jam 2: Hashes are Insecure</title>
             <link>http://kentfredric.github.io/blog/2016/01/02/re-the-perl-jam-2-hashes-are-insecure/</link>
