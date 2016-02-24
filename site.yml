@@ -132,11 +132,16 @@ deploy:
 # blog_app: These are the settings for the blog application.
 blog_app:
     class: 'Statocles::App::Blog'
-    with: 'KENTNL::Feeds::FullText'
+    with: 'Statocles::AppRole::ExtraFeeds'
     args:
         url_root: '/blog'
         store: 'blog'
         page_size: 10
+        extra_feeds:
+          fulltext.rss:
+            text: 'RSS FullText'
+          fulltext.atom:
+            text: 'Atom FullText'
 
 # page_app: These are the settings for the page application.
 page_app:
